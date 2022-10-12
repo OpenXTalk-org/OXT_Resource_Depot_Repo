@@ -1,0 +1,1 @@
+My first Extension Builder Widget created as a Builder learning exercise, is a simple '5-star rating' control (10 possible with half-stars) with basic options. May be useful to someone.
