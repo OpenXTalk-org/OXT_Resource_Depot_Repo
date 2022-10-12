@@ -1,7 +1,0 @@
-First Widget I created, a simple '5-star rating' control.
-Built as a learning experiment, you may still find it useful.
-The control actually has ten possible states with half-stars ratings.
-There is a minimal set of other properties such as iconColor and iconHiliteColor
-
-Example usage:
-set the amountOfStars of widget "FiveStar" to 3.5
