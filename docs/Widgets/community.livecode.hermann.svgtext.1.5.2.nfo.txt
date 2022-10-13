@@ -1,1 +1,1 @@
-Summary: Uses SVG 'fonts' (included) to allow for scalable rotated, stylized text. Great for header titles or rotating text animations
+This wodget uses embedded SVG 'fonts' to allow for scalable rotated, stylized text. Great for header titles or rotating text animations!
