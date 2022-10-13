@@ -129,3 +129,5 @@ dist
 .DS_Store
 ._ResRepos.tsv
 docs/Widgets/._list.tsv
+docs/.DS_Store
+.DS_Store
