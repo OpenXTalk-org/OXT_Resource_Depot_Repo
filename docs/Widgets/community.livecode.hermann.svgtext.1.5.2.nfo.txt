@@ -1,0 +1,1 @@
+Summary: Uses SVG 'fonts' (included) to allow for scalable rotated, stylized text. Great for header titles or rotating text animations
