@@ -1,0 +1,82 @@
+<package version="0.0">
+  <name>org.openxtalk.hermann.digitclock</name>
+  <title>hhDClox</title>
+  <author>Hermann Hoch</author>
+  <version>1.2.1</version>
+  <license>community</license>
+  <type>widget</type>
+  <requires name="com.livecode.canvas"/>
+  <requires name="com.livecode.engine"/>
+  <requires name="com.livecode.array"/>
+  <requires name="com.livecode.list"/>
+  <requires name="com.livecode.widget"/>
+  <requires name="com.livecode.arithmetic"/>
+  <requires name="com.livecode.math"/>
+  <requires name="com.livecode.mathfoundation"/>
+  <requires name="com.livecode.binary"/>
+  <requires name="com.livecode.string"/>
+  <requires name="com.livecode.logic"/>
+  <requires name="com.livecode.type"/>
+  <requires name="com.livecode.typeconvert"/>
+  <requires name="com.livecode.char"/>
+  <requires name="com.livecode.date"/>
+  <metadata key="preferredSize">256,39</metadata>
+  <metadata key="svgicon">M0 63.5 C 0 127,0 127,144 127 C 288 127,288 127,288 63.5 C 288 0,288 0,144 0 C 0 0,0 0,0 63.5 M161.763 63.250 C 162.026 98,162.026 98,154.013 98 C 146 98,146 98,146 63.667 C 146 44.783,146.318 29.015,146.706 28.627 C 147.095 28.239,150.582 28.051,154.456 28.210 C 161.5 28.5,161.5 28.5,161.763 63.250 M47.358 35.470 C 65.991 38.791,76.679 48.857,77.775 64.116 C 78.903 79.832,69.185 91.852,51.661 96.416 C 44.083 98.390,30.543 99.423,23.608 98.557 C 18 97.856,18 97.856,18 65.928 C 18 34,18 34,28.750 34.035 C 34.663 34.054,43.036 34.7,47.358 35.470 M136.364 38.640 C 137.639 47.941,137.993 47.487,128.548 48.657 C 113.183 50.560,103.995 57.202,104.004 66.398 C 104.009 71.798,106.836 76.234,112.324 79.450 C 117.042 82.215,127.945 84.954,134.348 84.983 C 138.196 85,138.196 85,137.484 91.250 C 137.093 94.688,136.534 97.9,136.242 98.388 C 135.383 99.825,118.028 98.313,111.396 96.224 C 90.7 89.703,81.037 71.517,89.135 54.331 C 92.801 46.553,103.353 38.855,114 36.191 C 121.331 34.357,122.201 34.237,129.114 34.116 C 135.728 34,135.728 34,136.364 38.640 M34.791 66.185 C 34.5 85.230,34.5 85.230,39.867 84.675 C 51.084 83.515,59.544 76.817,60.703 68.178 C 62.168 57.255,54.049 49.640,38.791 47.628 C 35.083 47.139,35.083 47.139,34.791 66.185 M209.5 50.750 C 217.845 55.062,222.941 63.520,222.978 73.124 C 223.020 83.927,218.681 91.665,209.870 96.496 C 205.255 99.027,203.446 99.437,197 99.416 C 190.852 99.395,188.564 98.908,184.312 96.710 C 164.981 86.721,167.060 57.061,187.627 49.407 C 193.039 47.394,204.346 48.088,209.5 50.750 M246.5 56.044 C 249.250 60.419,251.794 63.998,252.154 63.999 C 252.513 64,255.134 60.373,257.977 55.941 C 260.879 51.418,263.663 48.097,264.323 48.372 C 264.970 48.642,267.863 49.650,270.750 50.614 C 273.637 51.577,276 52.750,276 53.221 C 276 53.692,273.265 58.144,269.923 63.115 C 266.580 68.086,264.059 72.712,264.321 73.394 C 264.583 74.077,267.543 78.816,270.899 83.927 C 276.377 92.270,277.787 95,276.619 95 C 276.410 95,273.305 96.104,269.720 97.454 C 263.201 99.907,263.201 99.907,257.525 90.954 C 254.403 86.029,251.715 82,251.551 82 C 251.386 82,248.860 85.713,245.936 90.250 C 243.012 94.787,240.347 98.836,240.014 99.246 C 239.235 100.205,227.763 95.789,227.282 94.345 C 227.081 93.744,229.898 88.887,233.541 83.551 C 240.165 73.850,240.165 73.850,234.144 64.675 C 230.832 59.629,227.982 54.898,227.811 54.162 C 227.540 52.996,237.287 48.387,240.5 48.161 C 241.050 48.123,243.750 51.670,246.5 56.044 M190.291 63.509 C 186.815 66.985,186.786 67.087,187.157 74.446 C 187.466 80.565,187.948 82.316,189.892 84.385 C 196.955 91.903,207.231 85.811,207.231 74.104 C 207.231 61.607,197.979 55.821,190.291 63.509Z</metadata>
+  <handler name="OnSave" parameters="out array" return="any"/>
+  <handler name="OnLoad" parameters="in array" return="any"/>
+  <handler name="OnCreate" parameters="" return="any"/>
+  <handler name="OnPaint" parameters="" return="any"/>
+  <handler name="OnMouseDown" parameters="" return="any"/>
+  <handler name="OnMouseUp" parameters="" return="any"/>
+  <handler name="OnMouseRelease" parameters="" return="any"/>
+  <handler name="OnMouseEnter" parameters="" return="any"/>
+  <handler name="OnMouseLeave" parameters="" return="any"/>
+  <handler name="OnOpen" parameters="" return="any"/>
+  <handler name="OnClose" parameters="" return="any"/>
+  <handler name="OnTimer" parameters="" return="any"/>
+  <property name="widgetVersion" get="string"/>
+  <property name="angle" get="number" set="number"/>
+  <metadata key="angle.editor">com.livecode.pi.enum</metadata>
+  <metadata key="angle.options">0,90,-90</metadata>
+  <property name="textFont" get="string" set="string"/>
+  <metadata key="textFont.user_visible">false</metadata>
+  <property name="textSize" get="string" set="string"/>
+  <metadata key="textSize.user_visible">false</metadata>
+  <property name="digitfont" get="string" set="string"/>
+  <metadata key="digitfont.section">Text</metadata>
+  <metadata key="digitfont.editor">com.livecode.pi.enum</metadata>
+  <metadata key="digitfont.options">execute:get the fontnames; sort it</metadata>
+  <property name="digitfontsize" get="number" set="number"/>
+  <metadata key="digitfontsize.editor">com.livecode.pi.number</metadata>
+  <metadata key="digitfontsize.min">10</metadata>
+  <metadata key="digitfontsize.max">128</metadata>
+  <metadata key="digitfontsize.step">1</metadata>
+  <metadata key="digitfontsize.section">Text</metadata>
+  <property name="useScaledVerdana" get="boolean" set="boolean"/>
+  <metadata key="useScaledVerdana.section">Text</metadata>
+  <metadata key="useScaledVerdana.editor">com.livecode.pi.boolean</metadata>
+  <property name="dateColor" get="string" set="string"/>
+  <metadata key="dateColor.section">Colors</metadata>
+  <metadata key="dateColor.editor">com.livecode.pi.colorwithalpha</metadata>
+  <property name="fillColor" get="string" set="string"/>
+  <metadata key="fillColor.section">Colors</metadata>
+  <metadata key="fillColor.editor">com.livecode.pi.colorwithalpha</metadata>
+  <property name="strokeColor" get="string" set="string"/>
+  <metadata key="strokeColor.section">Colors</metadata>
+  <metadata key="strokeColor.editor">com.livecode.pi.colorwithalpha</metadata>
+  <property name="useShadow" get="boolean" set="boolean"/>
+  <metadata key="useShadow.section">Colors</metadata>
+  <property name="timeZone" get="number" set="optional number"/>
+  <metadata key="timeZone.editor">com.livecode.pi.timezone</metadata>
+  <metadata key="timeZone.label">Timezone</metadata>
+  <metadata key="timeZone.default"></metadata>
+  <property name="useDateColor" get="boolean" set="boolean"/>
+  <metadata key="useDateColor.editor">com.livecode.pi.boolean</metadata>
+  <metadata key="useDateColor.section">Colors</metadata>
+  <property name="useFengShuiColors" get="boolean" set="boolean"/>
+  <metadata key="useFengShuiColors.editor">com.livecode.pi.boolean</metadata>
+  <metadata key="useFengShuiColors.section">Colors</metadata>
+  <property name="fengShuiColoring" get="string"/>
+  <metadata key="fengShuiColoring.section">Colors</metadata>
+  <handler name="setAngle" parameters="in number" return="nothing"/>
+</package>

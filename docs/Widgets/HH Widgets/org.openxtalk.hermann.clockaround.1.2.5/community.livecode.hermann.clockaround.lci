@@ -1,0 +1,29 @@
+import module community.livecode.hermann.clockaround
+  use com.livecode.canvas
+  use com.livecode.engine
+  use com.livecode.math
+  use com.livecode.widget
+  use com.livecode.arithmetic
+  use com.livecode.binary
+  use com.livecode.list
+  use com.livecode.logic
+  use com.livecode.string
+  use com.livecode.type
+  use com.livecode.typeconvert
+  use com.livecode.char
+  use com.livecode.array
+  use com.livecode.byte
+  use com.livecode.date
+  use com.livecode.mathfoundation
+  handler OnMouseDown() returns optional any
+  handler OnMouseUp() returns optional any
+  handler OnEnter() returns optional any
+  handler OnLeave() returns optional any
+  handler OnCreate() returns optional any
+  handler OnOpen() returns optional any
+  handler OnPaint() returns optional any
+  handler OnTimer() returns optional any
+  handler OnSave(out rProp as Array) returns optional any
+  handler OnLoad(in rProp as Array) returns optional any
+  handler OnGeometryChanged() returns nothing
+end module

@@ -1,0 +1,2568 @@
+/**
+Date picker v1.1.0 [-hh fecit, Oct 2018]
+
+Description:
+This is a fat date picker widget (for LC 8 and 9).
+
+For creating new widgets ...
+... Dragging from Tools does NOT work (is an IDE bug)
+... Choose from menu Object/New Widget or
+... DoubleClick the Date icon in Tools.
+
+++ If the user selects a day (and not before that), the date appears at the bottom of the widget together with an "OK" button.
+++ Use also (optionally) the scrollWheel to switch between months.
+++ Click at the title (month and year) to select the local today.
+++ Click the monthArrows or change-month buttons once for a one-step, hold mouse down for a fast change.
+++ Drag a standard widget by grabbing its 'border region' (whether framed or not).
+
+[A] Standard widget (non-popup):
+
+Start with
+set the selectedDate of widget to "year,month" or "year,month,day"
+
+An empty selectedDate-string "" will select the local "today".
+
+WARNING. The input must be a valid date. It is NOT (really) checked.
+
+Clicking the OK-button sends a message
+
+selectedDateOfWidget "p1,p2,p3,p4,p5,p6,p7"
+
+for example
+
+selectedDateOfWidget "2018,10,23,6,Sa,October,4"
+
+where
+p1 = selected year (number),
+p2 = selected month (number),
+p3 = selected dayOfMonth (number),
+p4 = selected dayOfWeek (number in current order),
+p5 = selected dayOfWeek name,
+p6 = selected month name,
+p7 = selected day's lunarPhase (number).
+
+From p4 and p5 you can deduce the current week start. As to p7 see
+en.wikipedia.org/wiki/Lunar_phase
+and compare to the index of the displayed files.
+
+The widget or the card or above in the message path could then have a script that handles the message:
+
+on selectedDateOfWidget pDate
+   repeat with i=1 to 7
+      put item i of pDate into dt[i]
+   end repeat
+   -- now use the values dt[i]
+end selectedDateOfWidget
+
+
+Set/Get one or more of the 36 properties (at least selectedDate) by script or in the property inspector.
+
+Tab Basic:
+selectedDate, noDateText, allowGrab, allowScroll, showTime, showLunarPhase, southernHemisphere, useMonthArrows.
+
+Tab Contents:
+namesToUse, weekStart, customDayNamesSuToSa, customMonthNames.
+
+Tab Colors:
+borderRoundRadius, borderWidth, (resetColors,) (invertedColors,) colorActive, colorActiveVar, colorBack, colorBackVar, colorBorder, colorEmpty, colorFore, colorForeVar, colorHilite, colorWidgetBack.
+
+Tab Text:
+textFont, dayNamesBold, dayNamesItalic, daysBold, daysItalic, pickedDateBold, pickedDateItalic, titleBold, titleItalic, pickerScale, (setPickerScaleToDefault,) scaleDefault.
+
+Tab Advanced:
+hhInfo (compact Info for use in the property inspector, read only).
+
+Moreover, with a standard widget, you can script:
+
+do "changeMonth M" in [widget]
+where M is any integer in range -12 to 12.
+
+do "resetColors" in [widget] (resets to default colors).
+do "invertColors" in [widget] (inverts current colors).
+
+
+[B] Popup widget:
+
+Clicking the OK-button puts the string "p1,p2,p3,p4,p5,p6" (see explanation above) in the variable it and the widget closes after clicking "OK" (like after a LC Script dialog).
+Clicking outside of the widget closes too and cancels leaving the variable it empty.
+
+Usage (for the description of the properties see the detailed infos):
+
+Set one or more of the following 34  properties, at least "selectedDate".
+(AllowGrab, which is true by default, is not allowed for the popup variant and scaleDefault is for use in the property inspector only).
+[1] put "2018,12" into tP["selectedDate"] -- or "2018,12,23" or "today" or "", default is "today"
+[2] put "<No day>" into tP["noDateText"] -- default is "Please select a day"
+[3] put true into tP["allowScroll"] -- default is false
+[4] put true into tP["showTime"] -- default is false
+[5] put true into tP["showLunarPhase"] -- default is false
+[6] put true into tP["southernHemisphere"] -- default is false
+[7] put false into tP["useMonthArrows"] -- default is true (shows arrows or '1-3-6-12 buttons').
+[8] put "English" into tP["namesToUse"] -- one of "Custom,English,System", default is "System"
+[9] put "Monday" into tP["weekStart"] -- one of "Sunday,Monday,Saturday", default is "Sunday"
+[10] put "SO, MO, DI, MI, DO, FR, SA" into tP["customDayNamesSuToSa"] -- Give ALWAYS in order sunday to saturday, default is "Su, Mo, Tu, We, Th, Fr, Sa"
+[11] put "Jan, Feb, März, Apr, Mai, Juni, Juli, Aug, Sept, Okt, Nov, Dez" into tP["customMonthNames"] -- default is "Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec"
+[12] put "0" into tP["borderWidth"] -- integer in range 0-12, default is 8
+[13] put "0" into tP["roundRadius"] -- integer in range 0-16, default is 8
+[14-23] put "r,g,b,a" into tP["<color>"] -- or r,g,b (then a defaults to 255)
+where r,g,b,a are integers in range 0-255 und <color> is one of
+colorActive -- default is 0,51,153,255 (= moonBack)
+colorActiveVar -- default is 255,204,102,255 (= moonFore)
+colorBack -- default is 242,242,242,255
+colorBackVar -- default is 51,51,51,255
+colorBorder -- default is 51,51,51,255
+colorEmpty -- default is 204,204,204,204
+colorFore -- default is 0,0,0,255
+colorForeVar -- default is 255,255,255,229
+colorHilite -- default is 0,255,0,127
+colorWidgetBack -- default is 178,178,178,255
+[24] put "Skia Extended" into tP["textFont"] -- default is "(System)"
+[25] put 14 into tP["baseTextSize"] -- an integer in range 10-16, default is 13
+[26-33] put true into tP["<partStyle>"] (all 8 have the default false)
+where <partStyle> is one of dayNamesBold, dayNamesItalic, daysBold, daysItalic, pickedDateBold, pickedDateItalic, titleBold, titleItalic
+[34] put "1.1" into tP["pickerScale"] -- default is 1
+
+Then
+
+on mouseUp
+   popup "community.livecode.hermann.datepicker" \
+       at the clickLoc with properties tP
+   if it is not empty then answer it
+end mouseUp
+
+**/
+
+
+widget org.openxtalk.hermann.datepicker
+
+use com.livecode.engine
+use com.livecode.canvas
+use com.livecode.math
+use com.livecode.widget
+
+--mark TOP
+
+constant kWidgetVersion is "hhDatePicker_v110 [fat widget]"
+metadata version			is "1.1.0"
+metadata title				is "hhDate"
+metadata author			is "Hermann Hoch"
+metadata preferredSize	is "256,256"
+metadata svgicon is "M0 63.500 C 0 127,0 127,119 127 C 238 127,238 127,238 63.500 C 238 0,238 0,119 0 C 0 0,0 0,0 63.500 M47.358 35.470 C 65.991 38.791,76.679 48.857,77.775 64.116 C 78.903 79.832,69.185 91.852,51.661 96.416 C 44.083 98.390,30.543 99.423,23.608 98.557 C 18 97.856,18 97.856,18 65.928 C 18 34,18 34,28.750 34.035 C 34.663 34.054,43.036 34.700,47.358 35.470 M158 43 C 158 49,158 49,166 49 C 174 49,174 49,174 55 C 174 61,174 61,165.909 61 C 157.818 61,157.818 61,158.159 71.475 C 158.578 84.338,159.645 85.904,168.649 86.872 C 175.086 87.563,174.832 87.091,173.434 95.750 C 172.917 98.951,172.828 99,167.504 99 C 158.136 99,152.105 97.170,147.584 92.956 C 143.500 89.149,143.500 89.149,143.174 75.074 C 142.849 61,142.849 61,138.924 61 C 135 61,135 61,135 55 C 135 49,135 49,139 49 C 143 49,143 49,143 43 C 143 37,143 37,150.500 37 C 158 37,158 37,158 43 M34.791 66.185 C 34.500 85.230,34.500 85.230,39.867 84.675 C 51.084 83.515,59.544 76.817,60.703 68.178 C 62.168 57.255,54.049 49.640,38.791 47.628 C 35.083 47.139,35.083 47.139,34.791 66.185 M209.905 48.973 C 218.704 51.496,225 59.932,225 69.196 C 225 74,225 74,209 74 C 191.512 74,191.489 74.009,194.960 79.701 C 197.962 84.626,202.192 86.316,212.750 86.808 C 222 87.239,222 87.239,222 90.554 C 222 92.378,221.561 95.024,221.025 96.435 C 220.119 98.816,219.595 99,213.708 99 C 190.866 99,177.685 89.478,177.719 73.002 C 177.744 60.891,183.905 52.307,194.994 48.934 C 198.626 47.829,205.984 47.848,209.905 48.973 M114.436 50.088 C 116.814 50.687,120.397 52.527,122.400 54.178 C 128.840 59.487,129.403 61.500,129.822 80.706 C 130.265 101.088,131.916 99.434,111.724 98.843 C 100.104 98.502,97.900 98.155,93.552 95.978 C 86.994 92.694,84.663 89.362,84.753 83.405 C 84.884 74.747,91.437 69.875,105.750 67.793 C 110.287 67.133,114 66.320,114 65.988 C 114 65.655,113.425 64.597,112.723 63.636 C 111.064 61.367,105.208 60.054,96.619 60.024 C 89.738 60,89.738 60,90.358 56.250 C 90.699 54.188,90.983 51.712,90.989 50.750 C 90.999 49.206,92.126 49,100.557 49 C 105.814 49,112.059 49.490,114.436 50.088 M197.217 59.561 C 195.991 60.419,194.305 62.444,193.469 64.061 C 191.949 67,191.949 67,201.422 67 C 210.896 67,210.896 67,209.845 63.984 C 207.905 58.419,201.866 56.304,197.217 59.561 M110.002 75.100 C 101.578 76.749,98.071 81.396,101.787 85.985 C 103.239 87.778,104.960 88.415,109.334 88.778 C 115 89.248,115 89.248,115 81.624 C 115 77.431,114.888 74.049,114.750 74.110 C 114.612 74.170,112.476 74.615,110.002 75.100Z"
+
+constant kMonthNames is \
+	["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+constant kDayNames0 is ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]
+constant kArrows is ["","lft", "right", "leftleft", "rightright", "left1", "left3", "left6", "left12", "right1", "right3", "right6", "right12", "scrolled"]
+
+--mark VARIABLES
+variable mAllowGrab as Boolean
+variable mAllowScroll as Boolean
+variable mArrowClicked as Boolean
+variable mBaseBounds as Rectangle
+variable mBaseBounds0 as Rectangle
+variable mBaseW as Number
+variable mBaseTextSize as Number
+variable mBorderWidth as Number
+variable mBorderRoundRadius as Number
+variable mCalendar as List
+variable mClickedDay as String
+variable mColorActive as Color
+variable mColorActiveVar as Color
+variable mColorBack as Color
+variable mColorBackVar as Color
+variable mColorBorder as Color
+variable mColorEmpty as Color
+variable mColorFore as Color
+variable mColorForeVar as Color
+variable mColorHilite as Color
+variable mColorWidgetBack as Color
+variable mCurrentDay as Number
+variable mCurrentDayName as String
+variable mCurrentMonth as Number
+variable mCurrentMoon as Number
+variable mCurrentYear as Number
+variable mCustomDayNames as List
+variable mCustomMonthNames as List
+variable mD0 as List
+variable mD1 as List
+variable mD7 as List
+variable mDayNames as List
+variable mDayNamesBold as Boolean
+variable mDayNamesItalic as Boolean
+variable mDays as List
+variable mDaysBold as Boolean
+variable mDaysItalic as Boolean
+variable mDown as Boolean
+variable mE as ScriptObject
+variable mFirstTime as Boolean
+variable mGrab as Boolean
+variable mGrabLimit as Number
+variable mHeight as Number
+variable mInfo as String
+variable mLastSelectedDate as List
+variable mLeft as Number
+variable mMonthNames as List
+variable mMoon as List
+variable mMouse as Point
+variable mNamesToUse as String
+variable mNoDateText as String
+variable mPathList as List
+variable mOKClicked as Boolean
+variable mOldDay as String
+variable mOldDay2 as String
+variable mPickedDateBold as Boolean
+variable mPickedDateItalic as Boolean
+variable mPickerScale as Number
+variable mPickerScaleOne as Number
+variable mResizeFromBR as Boolean
+variable mSelected as Boolean
+variable mSelectedDate as String
+variable mShowInfo as Boolean
+variable mShowLunarPhase as Boolean
+variable mShowTime as Boolean
+variable mSouthern as Boolean
+variable mSystemDayNames as List
+variable mSystemMonthNames as List
+variable mWeekStart as String
+variable mTable as List
+variable mTable1 as List
+variable mTime as String
+variable mTitle as List
+variable mTitleBold as Boolean
+variable mTitleItalic as Boolean
+variable mTitleClicked as Boolean
+variable mTop as Number
+variable mUseMonthArrows as Boolean
+variable mWidgetVersion as String
+variable mWidth as Number
+
+--mark PUBLIC HANDLERS
+
+--
+public handler OnCreate()
+	put my script object into mE
+	put kWidgetVersion into mWidgetVersion
+	put [] into mDayNames
+	put [] into mDays
+	put [] into mTable
+	put [] into mTable1
+	put [] into mTitle
+	put true	into mAllowGrab
+	put false	into mAllowScroll
+	put false	into mDayNamesBold
+	put false	into mDayNamesItalic
+	put false	into mDaysBold
+	put false	into mDaysItalic
+	put false	into mDaysBold
+	put false	into mDaysItalic
+	put false	into mPickedDateBold
+	put false	into mPickedDateItalic
+	put false	into mSelected
+	put false	into mShowLunarPhase
+	put true into mShowInfo
+	put false	into mShowTime
+	put false	into mSouthern
+	put false	into mTitleBold
+	put false	into mTitleClicked
+	put false	into mTitleItalic
+	put false	into mUseMonthArrows
+	put "System" into mNamesToUse
+	put "Please select a day" into mNoDateText
+	put "Sunday" into mWeekStart
+	defaultColors2()
+	put 13 into mBaseTextSize
+	put  8 into mBorderWidth
+	put  8 into mBorderRoundRadius
+	put  1 into mPickerScale
+	put  1 into mPickerScaleOne
+	put true	into mFirstTime
+	put getTime() into mTime
+	--##	Create Table
+	put 256 into mBaseW -- optimally a multiple of 128
+	put mBaseW/128 into mGrabLimit
+	put insetRect(mBorderWidth/2, rectangle [0,0,mBaseW,mBaseW]) into mBaseBounds
+	put insetRect(mBorderWidth/2+mGrabLimit, rectangle [0,0,mBaseW,mBaseW]) into mBaseBounds0
+	------------ day: width, height, inset, table: left, top
+	--variable tT as Number
+	--put mBaseTextSize/13 into tT
+	createRects( 16*mBaseW/128, 11*mBaseW/128, 1, 8*mBaseW/128, 38*mBaseW/128 )
+	--## load lunar phase images
+	variable tC as Number
+	variable tS as String
+	put [] into mMoon
+	repeat with tC from 0 up to 7 --> images index 1 to 7
+		put "m"&(tC formatted as string)&".png" into tS
+		push image from resource file tS onto mMoon
+	end repeat
+	--## fill base Lists
+	put kDayNames0	into mDayNames
+	put kDayNames0	into mCustomDayNames
+	put kMonthNames into mMonthNames
+	put kMonthNames into mCustomMonthNames
+	put [] into mPathList -- left,right,leftleft,rightright arrows:
+	push polygon path with points  [point[-14, 0],point[ 8,-9],point[8, 9]] onto mPathList
+	push polygon path with points  [point[ -8,-9],point[-8, 9],point[14,0]] onto mPathList
+	push polyline path with points [point[ -4, 0],point[ 6,-9],point[ 6, 9],point[-4, 0], \
+			  point[-5,0],point[-5,9],point[-15, 0],point[-5,-9],point[-5, 0]] onto mPathList
+	push polyline path with points [point[  5, 0],point[ 5, 9],point[15, 0], point[ 5,-9], \
+			  point[ 5,0],point[ 4,0],point[ -6,-9],point[-6, 9],point[ 4, 0]] onto mPathList
+	--## local today
+	setToday() --> sets mSelectedDate
+	updateCalendar()
+	put mCurrentDay formatted as string into mClickedDay
+end handler
+
+--
+public handler OnOpen()
+	--
+	setDaysAndMonthsByType(mNamesToUse)
+	updateCalendar()
+	put mCurrentDay formatted as string into mClickedDay
+	setSelectedDate(mSelectedDate)
+	setShowTime(mShowTime)
+end handler
+
+--
+public handler OnClose()
+	cancel timer
+	redraw all
+end handler
+
+--
+public handler OnDo(in pScript as String)
+	variable tA as List
+	--> LCB is case sensitive!!
+	if the lower of pScript begins with "changemonth" then
+		-- param will be cut to range -12 to 12
+		split pScript by " " into tA
+		if the number of elements in tA > 1 then
+			changeMonth("both",tA[2] parsed as number)
+		end if
+	else if the lower of pScript is "resetcolors" then
+		setDefaultColors("true")
+	else if the lower of pScript is "invertcolors" then
+		setInvertedColors("true")
+	end if
+end handler
+
+--
+public handler OnGeometryChanged()
+	put the maximum of 0.8 and \
+		((the minimum of my width and my height)/mBaseW) into mPickerScale
+end handler
+
+--mark OnPaint
+--## uses mTable = list of rectangles, created once by createRects()
+-- mTable[1] to mTable[49] = dayNumbers
+-- mTable[50] = OK button
+-- mTable[51] = date info
+-- mTable[52] = month and year
+-- mTable[53] = left  arrow
+-- mTable[54] = right arrow
+-- mTable[55] = leftleft   arrow
+-- mTable[56] = rightright arrow
+-- mTable[57] = left button 1
+-- mTable[58] = left button 3
+-- mTable[59] = left button 6
+-- mTable[60] = left button 12
+-- mTable[61] = right button 1
+-- mTable[62] = right button 3
+-- mTable[63] = right button 6
+-- mTable[64] = right button 12
+public handler OnPaint()
+	variable isThisMonth as Boolean
+	variable tC as Number
+	variable tF as Font
+	variable tL as List
+	variable tL1 as List
+	variable tL2 as List
+	variable tCMax as Number
+	variable tDay as Number
+	variable tDate as List
+	variable tN as Number
+	variable tOldBold as Boolean
+	variable tOldItalic as Boolean
+	variable tPath as Path
+	variable tPath1 as Path
+	variable tPath2 as Path
+	variable tPicked as Boolean
+	variable tR as Rectangle
+	variable tR1 as Rectangle
+	variable tS as String
+	variable tS2 as String
+	variable tText as String
+	put my font into tF
+	set the size of tF to mBaseTextSize
+	set the font of this canvas to tF
+	put mCalendar into tL
+	--if tL is nothing then -- in case of a slow startup
+		--return
+	--end if
+	transform this canvas by transform with matrix [mPickerScale,0,0,mPickerScale,0,0]
+--mark  draw back/frame
+	set the antialias of this canvas to true -- default
+	set the join style of this canvas to "miter"
+	set the miter limit of this canvas to the maximum of 8 and mBorderWidth
+	if mBorderRoundRadius > 0 then
+		put rounded rectangle path of mBaseBounds with radius mBorderRoundRadius into tPath
+	else
+		put rectangle path of mBaseBounds into tPath
+	end if
+	set the paint of this canvas to solid paint with mColorWidgetBack
+	fill tPath on this canvas
+	if mBorderWidth > 0 then
+		set the stroke width of this canvas to mBorderWidth
+		set the paint of this canvas to solid paint with mColorBorder
+		stroke tPath on this canvas
+	end if
+--mark  draw dayNumbers
+	set the stroke width of this canvas to 1
+	put the local date into tDate
+	put (tDate[1] is mCurrentYear) and (tDate[2] is mCurrentMonth) into isThisMonth
+	if mShowTime then
+		put 40 into tCmax
+	else
+		put 42 into tCmax
+	end if
+	if mDaysBold or mDaysItalic then
+		set the bold of tF to mDaysBold
+		set the italic of tF to mDaysItalic
+		set the font of this canvas to tF
+	end if
+	put false into tPicked
+	repeat with tC from 1 up to tCmax -- days
+		if tL[tC] is "" then
+			set the paint of this canvas to solid paint with mColorEmpty
+			fill rectangle path of mTable1[tC] on this canvas
+			next repeat
+		end if
+		put mTable[tC] into tR
+		parse tL[tC] as number into tDay
+		if tL[tC] is mClickedDay and tL[tC] is not "" then
+			put true into tPicked
+			set the paint of this canvas to solid paint with mColorHilite
+			fill rectangle path of mTable1[tC] on this canvas
+		else
+			set the paint of this canvas to solid paint with mColorBack
+			fill rectangle path of mTable1[tC] on this canvas
+		end if
+		if isThisMonth and tDate[3] is ((tL[tC] parsed as number)) then
+			set the paint of this canvas to solid paint with mColorBackVar
+			fill rectangle path of mTable1[tC] on this canvas
+			set the paint of this canvas to solid paint with mColorActiveVar
+		else
+			set the paint of this canvas to solid paint with mColorFore
+		end if
+		if tPicked then
+			put the bold of tF into tOldBold
+			put the italic of tF into tOldItalic
+			set the bold of tF to mPickedDateBold
+			set the italic of tF to mPickedDateItalic
+			set the font of this canvas to tF
+		end if
+		measure tL[tC] on this canvas
+		put the result into tR1
+		fill text tL[tC] at drawPoint(tR1,tR) on this canvas
+		if tPicked then
+			put false into tPicked
+			set the bold of tF to tOldBold
+			set the italic of tF to tOldItalic
+			set the font of this canvas to tF
+		end if
+	end repeat
+	if mDaysBold or mDaysItalic then
+		set the bold of tF to false
+		set the italic of tF to false
+		set the font of this canvas to tF
+	end if
+--mark  draw dayNames (header row)
+	put mTable1[43] into tR
+	set the paint of this canvas to solid paint with mColorBackVar
+	fill rectangle path of mTable1[43] on this canvas
+	put 1+dayCode(mCurrentYear, mCurrentMonth, tDate[3]) into tN
+	if mDayNamesBold or mDayNamesItalic then
+		if mDayNamesBold then
+			set the bold of tF to true
+		end if
+		if mDayNamesItalic then
+			set the italic of tF to true
+		end if
+		set the font of this canvas to tF
+	end if
+	repeat with tC from 1 up to 7
+		set the paint of this canvas to solid paint with mColorBackVar
+		fill rectangle path of mTable1[tC+42] on this canvas
+		if isThisMonth and tC is tN then
+			set the paint of this canvas to solid paint with mColorActiveVar
+		else
+			set the paint of this canvas to solid paint with mColorForeVar
+		end if
+		measure mDayNames[tC] on this canvas
+		put the result into tR1
+		put mTable1[tC+42] into tR
+		fill text mDayNames[tC] at drawPoint(tR1,tR) on this canvas
+	end repeat
+	if mDayNamesBold or mDayNamesItalic then
+		set the bold of tF to false
+		set the italic of tF to false
+		set the font of this canvas to tF
+	end if
+--mark  draw month and year (top)
+	if mTitleClicked then
+		set the paint of this canvas to solid paint with mColorHilite
+	else
+		set the paint of this canvas to solid paint with mColorBack
+	end if
+	fill rounded rectangle path of mTable[52] \
+		with radius 0.71*mBorderRoundRadius on this canvas
+	put (mTitle[1]& " " &mTitle[2]) into tText
+	if mTitleBold then
+		set the bold of tF to true
+	end if
+	if mTitleItalic then
+		set the italic of tF to true
+	end if
+	--set the size of tF to mBaseTextSize+1
+	set the font of this canvas to tF
+	measure tText on this canvas
+	put the result into tR1
+	put mTable[52] into tR
+	if isThisMonth then
+		set the paint of this canvas to solid paint with mColorActive
+	else
+		set the paint of this canvas to solid paint with mColorFore
+	end if
+	fill text tText at drawPoint(tR1,tR) on this canvas
+	if mTitleBold or mTitleItalic then
+		set the bold of tF to false
+		set the italic of tF to false
+	end if
+	--set the size of tF to mBaseTextSize
+	set the font of this canvas to tF
+--mark  draw arrows
+	if mUseMonthArrows then
+		set the stroke width of this canvas to 2
+		set the join style of this canvas to "round"
+		put ["left","right","leftleft","rightright"] into tL1
+		repeat with tC from 1 up to 4
+			put mPathList[tC] into tPath
+			put the bounding box of tPath into tR1
+			put mTable[52+tC] into tR
+			if tC mod 2 is 1 then
+				translate tPath by \
+					[( 0.3*the width of  tR1+the left of tR+the right of tR)/2, \
+					 (-0.2*the height of tR1+the top of tR+the bottom of tR)/2]
+			else
+				translate tPath by \
+					[(-0.3*the width of  tR1+the left of tR+the right of tR)/2, \
+					 (-0.2*the height of tR1+the top of tR+the bottom of tR)/2]
+			end if
+			if mClickedDay is tL1[tC] and mDown and mArrowClicked then
+				set the paint of this canvas to solid paint with mColorHilite
+			else
+				set the paint of this canvas to solid paint with mColorBackVar
+			end if
+			fill tPath on this canvas
+			set the paint of this canvas to solid paint with mColorForeVar
+			stroke tPath on this canvas
+		end repeat
+	else
+--mark  draw buttons
+		repeat with tC from 1 up to 8
+			put element tC of ["-1","-3","-6","-12","+1","+3","+6","+12"] into tS
+			put element tC of \
+				["left1", "left3","left6","left12","right1","right3","right6","right12"] into tS2
+			measure tS on this canvas
+			put the result into tR1
+			put mTable[56+tC] into tR
+			if mClickedDay is tS2 and mDown and mArrowClicked then
+				set the paint of this canvas to solid paint with mColorHilite
+			else
+				set the paint of this canvas to solid paint with mColorBackVar
+			end if
+			fill rounded rectangle path of mTable1[56+tC] \
+				with radius 0.36*mBorderRoundRadius on this canvas
+			set the paint of this canvas to solid paint with mColorForeVar
+			fill text tS at drawPoint(tR1,tR) on this canvas
+		end repeat
+	end if
+
+--mark  _mSelected_
+--> work around a non-found bug (possibly only in popup)
+	put  (( mCurrentDay>0 and not (mClickedDay is in \
+			[mD0[1],mD0[7]] & kArrows ) or mGrab) and mShowInfo ) into mSelected
+	if not mSelected then
+		put "" into mInfo
+	end if
+
+--mark  draw dateInfo
+	if mInfo is "" then
+		if mNoDateText is "" then
+			put " " into mNoDateText
+		end if
+		put mNoDateText into tS
+	else
+		put mInfo into tS
+		if mPickedDateBold and not mPickedDateItalic and mBaseTextSize is 16 then
+			replace ", " with "," in tS
+		end if
+	end if
+	if mSelected or tS is mNoDateText then
+		if mPickedDateBold then
+			set the bold of tF to true
+		end if
+		if mPickedDateItalic then
+			put " " after tS
+			set the italic of tF to true
+		end if
+		set the font of this canvas to tF
+		measure tS on this canvas
+		put the result into tR1
+		put mTable1[51] into tR
+		if mOKClicked then
+			set the paint of this canvas to solid paint with mColorBorder
+		else
+			set the paint of this canvas to solid paint with mColorActive
+		end if
+		fill text tS at point \
+				[-the width of tR1+the right of tR, \
+				(0.6*the height of tR1+the top of tR+the bottom of tR)/2] on this canvas
+	if mPickedDateBold then
+		set the bold of tF to false
+	end if
+	if mPickedDateItalic then
+		set the italic of tF to false
+	end if
+	set the font of this canvas to tF
+--mark  draw lunar phase
+		if mInfo is not "" then
+			if mShowLunarPhase then
+				draw mMoon[1+mCurrentMoon] into mTable1[65] of this canvas --square
+			end if
+--mark  draw OK button
+			if mOKClicked then
+				set the paint of this canvas to solid paint with mColorHilite
+			else
+				set the paint of this canvas to solid paint with mColorActive
+			end if
+			measure ",OK," on this canvas
+			put the result into tR1
+			put mTable[50] into tR
+			--add 0 to the top of tR -- moves rect up/down
+			--add 0 to the left of tR -- moves rect left/right
+			fill rounded rectangle path of tR with radius 0.71*mBorderRoundRadius on this canvas
+			set the paint of this canvas to solid paint with mColorBorder
+			set the stroke width of this canvas to 3
+			stroke rounded rectangle path of tR with radius 0.71*mBorderRoundRadius on this canvas
+			if mClickedDay is  "OK" then
+				set the paint of this canvas to solid paint with mColorHilite
+			else
+				set the paint of this canvas to solid paint with mColorForeVar
+			end if
+			fill text " OK " at drawPoint(tR1,tR) on this canvas
+		end if
+	end if
+--mark  draw time
+	if mShowTime then
+		set the size of tF to mBaseTextSize-1
+		set the font of this canvas to tF
+		measure mTime on this canvas
+		put the result into tR1
+		put mTable[41] into tR
+		set the paint of this canvas to solid paint with mColorFore
+		fill text mTime at point \
+				[0.9*the left of tR+0.1*the right of tR, \
+				(0.6*the height of tR1+the top of tR+the bottom of tR)/2] on this canvas
+	end if
+end handler
+
+--
+handler drawPoint(in tR1 as Rectangle, in tR2 as Rectangle) returns Point
+	return point \
+			[(-the width of tR1 + the left of tR2 + the right of tR2)/2, \
+			 (0.6*the height of tR1+the top of tR2+the bottom of tR2)/2]
+end handler
+
+--
+public handler OnTimer()
+	if mShowTime then
+		put getTime() into mTime
+		redraw all
+		schedule timer in 1 - (the universal time mod 1) seconds
+	else if not mDown then
+		cancel timer
+	end if
+	if mGrab then -- grab widget
+		variable tMouse as Point
+		variable tRect as Rectangle
+		put the mouse position into tMouse
+		put my rectangle into tRect
+		set property "left" of mE to (the left of tRect + the x of tMouse - the x of mMouse)
+		set property "top"  of mE to (the top of tRect  + the y of tMouse - the y of mMouse)
+		redraw all
+		schedule timer in 0.032 seconds
+	else if mDown then
+		changeMonth(mClickedDay,0)
+		if mFirstTime then
+			put false into mFirstTime
+			schedule timer in 0.5 seconds
+		else
+			schedule timer in 0.1 seconds
+		end if
+	end if
+end handler
+
+--
+public handler OnMouseDown()
+	variable tS as String
+	setMyRect()
+	put true into mDown
+	put true into mShowInfo
+	if not mShowTime then
+		cancel timer
+	end if
+	put false into mTitleClicked
+	put false into mArrowClicked
+	put the click position into mMouse
+	put hhItemsToNumList(mSelectedDate) into mLastSelectedDate
+	put mClickedDay into mOldDay
+	put getClick(mMouse) into mClickedDay
+	if not currently popped up and mAllowGrab and \
+			point [(the x of mMouse)/mPickerScale, (the y of mMouse)/mPickerScale] \
+					is not within mBaseBounds0 then
+		put true into mGrab
+		put mOldDay into mClickedDay -- do nothing
+		schedule timer in 0.1 seconds
+		return
+	end if
+	if mClickedDay is "" then
+		put "" into mInfo
+		put "0" into mClickedDay
+		updateCalendar()
+	else if mClickedDay is "dateInfo" then
+		put mOldDay into mClickedDay -- do nothing
+	else if mClickedDay is in ["left","right","leftleft","rightright", \
+			"left1", "left3","left6","left12","right1","right3","right6","right12"] then
+		put true into mArrowClicked
+		put true into mFirstTime
+		put "" into mInfo
+		schedule timer in 0.1 seconds
+		return
+	else if mClickedDay is "monthAndYear" then
+		setToday()
+		put true into mTitleClicked
+		put mCurrentDay formatted as string into mClickedDay
+		put mDayNames[1+dayCode(mCurrentYear, mCurrentMonth, mCurrentDay)] \
+				into mCurrentDayName
+		setInfo(mShowLunarPhase)
+		updateCalendar()
+	else if mClickedDay is in mDayNames then
+		put mOldDay into mClickedDay -- do nothing
+	else if char 1 of mClickedDay is in "0123456789" then
+		put mClickedDay into mOldDay2
+		setInfo(mShowLunarPhase)
+	else if mClickedDay is "OK" then
+		--	year,month,day,dayOfWeek,dayOfWeekName,monthName,lunarPhase
+		--> mCurrentDayName is set in getClick(), mCurrentMoon in setInfo()
+		variable tS as String
+		put mSelectedDate into tS	 -- year,month,day (numbers)
+		put "," & ((the first offset of [mCurrentDayName] in mDayNames) \
+					formatted as string) after tS -- dayOfWeek (number)
+		put "," & mCurrentDayName after tS  	-- dayOfWeekName
+		put "," & mMonthNames[mCurrentMonth] after tS -- monthName
+		put "," & (mCurrentMoon formatted as string) after tS  -- lunarPhase
+		send "selectedDateOfWidget" to mE with ["\q" & tS & "\q"]
+		if currently popped up then
+			close popup returning tS
+		else
+			put true into mOKClicked
+			put mOldDay into mClickedDay
+		end if
+	end if
+	redraw all
+end handler
+
+-- deltaX and deltaY are -1 or 1 (or 0)
+public handler OnMouseScroll(deltaX, deltaY)
+	if mAllowScroll then
+		changeMonth("both",deltaY)
+		put "scrolled" into mClickedDay
+		put "" into mInfo
+	end if
+	updateCalendar()
+	redraw all
+end handler
+
+--
+public handler OnMouseUp()
+	put false into mDown
+	put false into mTitleClicked
+	put false into mGrab
+	put false into mOKClicked
+	if not mShowTime then
+		cancel timer
+	end if
+	redraw all
+	post "mouseUp" to mE
+end handler
+
+--
+public handler OnMouseEnter()
+	post "mouseEnter"
+end handler
+
+--
+public handler OnMouseLeave()
+	post "mouseLeave"
+end handler
+
+--
+public handler OnMouseRelease()
+	OnMouseUp()
+end handler
+
+--
+public handler OnMouseCancel()
+	OnMouseUp()
+end handler
+
+--
+public handler OnSave(out rP as Array)
+	put {} into rP
+	format mAllowGrab as string into rP["allowGrab"]
+	format mAllowScroll as string into rP["allowScroll"]
+	format mBaseTextSize as string into rP["baseTextSize"]
+	format mBorderRoundRadius as string into rP["borderRoundRadius"]
+	format mBorderWidth as string into rP["borderWidth"]
+	format mDayNamesBold as string into rP["dayNamesBold"]
+	format mDayNamesItalic as string into rP["dayNamesItalic"]
+	format mDaysBold as string into rP["daysBold"]
+	format mDaysItalic as string into rP["daysItalic"]
+	put hColorToString(mColorActive) into rP["colorActive"]
+	put hColorToString(mColorActiveVar) into rP["colorActiveVar"]
+	put hColorToString(mColorBack) into rP["colorBack"]
+	put hColorToString(mColorBackVar) into rP["colorBackVar"]
+	put hColorToString(mColorBorder) into rP["colorBorder"]
+	put hColorToString(mColorEmpty) into rP["colorEmpty"]
+	put hColorToString(mColorFore) into rP["colorFore"]
+	put hColorToString(mColorForeVar) into rP["colorForeVar"]
+	put hColorToString(mColorHilite) into rP["colorHilite"]
+	put hColorToString(mColorWidgetBack) into rP["colorWidgetBack"]
+	put getCustomDayNames() into rP["customDayNames"]
+	put getCustomMonthNames() into rP["customMonthNames"]
+	put mNoDateText into rP["noDateText"]
+	put mNamesToUse into rP["namesToUse"]
+	format mPickedDateBold as string into rP["pickedDateBold"]
+	format mPickedDateItalic as string into rP["pickedDateItalic"]
+	format mPickerScale as string into rP["pickerScale"]
+	put mSelectedDate into rP["selectedDate"]
+	format mShowLunarPhase as string into rP["showLunarPhase"]
+	format mShowTime as string into rP["showTime"]
+	format mSouthern as string into rP["southern"]
+	format mTitleBold as string into rP["titleBold"]
+	format mTitleItalic as string into rP["titleItalic"]
+	format mUseMonthArrows as string into rP["useMonthArrows"]
+	put mWeekStart into rP["weekStart"]
+end handler
+
+--
+public handler OnLoad(in pP as Array)
+	if "allowGrab" is among the keys of pP then
+		parse pP["allowGrab"] as boolean into mAllowGrab
+	end if
+	if "allowScroll" is among the keys of pP then
+		parse pP["allowScroll"] as boolean into mAllowScroll
+	end if
+	if "baseTextSize" is among the keys of pP then
+		parse pP["baseTextSize"] as number into mBaseTextSize
+	end if
+	if "borderRoundRadius" is among the keys of pP then
+		parse pP["borderRoundRadius"] as number into mBorderRoundRadius
+	end if
+	if "borderWidth" is among the keys of pP then
+		parse pP["borderWidth"] as number into mBorderWidth
+	end if
+	if "dayNamesBold" is among the keys of pP then
+		parse pP["dayNamesBold"] as boolean into mDayNamesBold
+	end if
+	if "dayNamesItalic" is among the keys of pP then
+		parse pP["dayNamesItalic"] as boolean into mDayNamesItalic
+	end if
+	if "daysBold" is among the keys of pP then
+		parse pP["daysBold"] as boolean into mDaysBold
+	end if
+	if "daysItalic" is among the keys of pP then
+		parse pP["daysItalic"] as boolean into mDaysItalic
+	end if
+	if "colorActive" is among the keys of pP then
+		put hStringToColor(pP["colorActive"]) into mColorActive
+	end if
+	if "colorActiveVar" is among the keys of pP then
+		put hStringToColor(pP["colorActiveVar"]) into mColorActiveVar
+	end if
+	if "colorBack" is among the keys of pP then
+		put hStringToColor(pP["colorBack"]) into mColorBack
+	end if
+	if "colorBackVar" is among the keys of pP then
+		put hStringToColor(pP["colorBackVar"]) into mColorBackVar
+	end if
+	if "colorBorder" is among the keys of pP then
+		put hStringToColor(pP["colorBorder"]) into mColorBorder
+	end if
+	if "colorEmpty" is among the keys of pP then
+		put hStringToColor(pP["colorEmpty"]) into mColorEmpty
+	end if
+	if "colorFore" is among the keys of pP then
+		put hStringToColor(pP["colorFore"]) into mColorFore
+	end if
+	if "colorForeVar" is among the keys of pP then
+		put hStringToColor(pP["colorForeVar"]) into mColorForeVar
+	end if
+	if "colorHilite" is among the keys of pP then
+		put hStringToColor(pP["colorHilite"]) into mColorHilite
+	end if
+	if "colorWidgetBack" is among the keys of pP then
+		put hStringToColor(pP["colorWidgetBack"]) into mColorWidgetBack
+	end if
+	if "customDayNames" is among the keys of pP then
+		setCustomDayNames(pP["customDayNames"])
+	end if
+	if "customMonthNames" is among the keys of pP then
+		setCustomMonthNames(pP["customMonthNames"])
+	end if
+	if "namesToUse" is among the keys of pP then
+		put pP["namesToUse"] into mNamesToUse
+	end if
+	if "noDateText" is among the keys of pP then
+		put pP["noDateText"] into mNoDateText
+	end if
+	if "pickedDateBold" is among the keys of pP then
+		parse pP["pickedDateBold"] as boolean into mPickedDateBold
+	end if
+	if "pickedDateItalic" is among the keys of pP then
+		parse pP["pickedDateItalic"] as boolean into mPickedDateItalic
+	end if
+	if "pickerScale" is among the keys of pP then
+		parse pP["pickerScale"] as number into mPickerScale
+	end if
+	if "selectedDate" is among the keys of pP then
+		put pP["selectedDate"] into mSelectedDate
+	end if
+	if "showLunarPhase" is among the keys of pP then
+		parse pP["showLunarPhase"] as boolean into mShowLunarPhase
+	end if
+	if "showTime" is among the keys of pP then
+		parse pP["showTime"] as boolean into mShowTime
+	end if
+	if "southern" is among the keys of pP then
+		parse pP["southern"] as boolean into mSouthern
+	end if
+	if "titleBold" is among the keys of pP then
+		parse pP["titleBold"] as boolean into mTitleBold
+	end if
+	if "titleItalic" is among the keys of pP then
+		parse pP["titleItalic"] as boolean into mTitleItalic
+	end if
+	if "useMonthArrows" is among the keys of pP then
+		parse pP["useMonthArrows"] as boolean into mUseMonthArrows
+	end if
+	if "weekStart" is among the keys of pP then
+		put pP["weekStart"] into mWeekStart
+	end if
+end handler
+
+--mark PRIVATE HANDLERS
+
+--
+handler changeMonth(in pS as String, in pN as Number) returns nothing
+	variable tC as Number
+	variable tL1 as List
+	variable tL2 as List
+	if pN is 0 then
+		put ["left","right","leftleft","rightright", \
+				"left1","left3","left6","left12","right1","right3","right6","right12"] into tL1
+		put [-1,1,-12,12,-1,-3,-6,-12,1,3,6,12] into tL2
+		repeat with tC from 1 up to 12
+			if pS is tL1[tC] then
+				put tL2[tC] into pN
+				exit repeat
+			end if
+		end repeat
+	else
+		put the maximum of -12 and (the minimum of 12 and pN) into pN
+	end if
+	add pN to mCurrentMonth
+	if mCurrentMonth < 1 then
+		add 12 to mCurrentMonth
+		subtract 1 from mCurrentYear
+	end if
+	if mCurrentMonth > 12 then
+		subtract 12 from mCurrentMonth
+		add 1 to mCurrentYear
+	end if
+	updateCalendar()
+	redraw all
+end handler
+
+--
+handler createRects(in pW as Number,in pH as Number, in pD as Number, \
+	in pL as Number,in pT as Number) returns nothing
+	variable tI as Number
+	variable tJ as Number
+	variable tI0 as Number
+	variable tJ0 as Number
+	variable tL as List
+	put [] into tL
+	repeat with tI from 1 up to 6 -- for days = element 1-42
+		put pT+tI*pH-pH into tI0
+		repeat with tJ from 1 up to 7
+			put pL+tJ*pW-pW into tJ0
+			push rectangle [tJ0,tI0,tJ0+pW,tI0+pH] onto tL
+		end repeat
+	end repeat
+	put pT-pH into tI0 -- for dayNames = element 43-49
+	repeat with tJ from 1 up to 7
+		put pL+tJ*pW-pW into tJ0
+		push rectangle [tJ0,tI0,tJ0+pW,tI0+pH] onto tL
+	end repeat
+	put pT-2.7*pH into tI0
+	push rectangle [pL+5.15*pW,pT+6.42*pH,pL+6.9*pW,pT+7.42*pH] onto tL 	 -- OK button 		= 50
+	push rectangle [pL,pT+6.42*pH,pL+5*pW,pT+7.42*pH] onto tL 				 -- date info 		= 51
+	push rectangle [pL+2.05*pW,tI0+0.04*pH,pL+4.95*pW,tI0+1.58*pH] onto tL -- month&year 	= 52
+	push rectangle [pL+pW,tI0+0.4*pH,pL+2*pW,tI0+1.3*pH] onto tL 		 -- left arrow 	= 53
+	push rectangle [pL+5*pW,tI0+0.4*pH,pL+6*pW,tI0+1.3*pH] onto tL 	 -- right arrow   = 54
+	push rectangle [pL+0.1*pW,tI0+0.4*pH,pL+1.1*pW,tI0+1.3*pH] onto tL -- leftleftArrow		= 55
+	push rectangle [pL+5.9*pW,tI0+0.4*pH,pL+6.9*pW,tI0+1.3*pH] onto tL -- rightrightArrow 	= 56
+	multiply pH by 1.8
+	put pT-1.8*pH into tI0
+	push rectangle [pL+pW,tI0+0.3*pH,pL+2*pW,tI0+0.75*pH] onto tL  	-- left 1  	= 57
+	push rectangle [pL+pW,tI0+0.75*pH,pL+2*pW,tI0+1.2*pH] onto tL  	-- left 3 	= 58
+	push rectangle [pL,tI0+0.3*pH,pL+pW,tI0+0.75*pH] onto tL  			-- left 6  	= 59
+	push rectangle [pL,tI0+0.75*pH,pL+pW,tI0+1.2*pH] onto tL				-- left 12 	= 60
+	push rectangle [pL+5*pW,tI0+0.3*pH,pL+6*pW,tI0+0.75*pH] onto tL 	-- right 1 	= 61
+	push rectangle [pL+5*pW,tI0+0.75*pH,pL+6*pW,tI0+1.2*pH] onto tL 	-- right 3 	= 62
+	push rectangle [pL+6*pW,tI0+0.3*pH,pL+7*pW,tI0+0.75*pH] onto tL 	-- right 6 	= 63
+	push rectangle [pL+6*pW,tI0+0.75*pH,pL+7*pW,tI0+1.2*pH] onto tL 	-- right 12 = 64
+	push rectangle [pL+4*pW,pT+5*pH/1.8,pL+5*pW,pT+6*pH/1.8] onto tL -- lunarPhase = 65
+	put tL into mTable
+	put [] into tL
+	repeat with tI from 1 up to 65
+		push insetRect(pD,mTable[tI]) onto tL
+	end repeat
+	put tL into mTable1
+end handler
+
+--
+handler getClick(in pP as Point) returns String
+	variable tP as Point
+	variable tC as Number
+	variable tD as Number
+	variable tL as List
+	put point [(the x of pP)/mPickerScale, (the y of pP)/mPickerScale] into tP
+	repeat with tC from 1 up to 37 -- maximum non-empty cells
+		if tP is within mTable[tC] then
+			put tC wrap 7 into tD
+			put mDayNames[tD] into mCurrentDayName
+			return mDays[tC]
+		end if
+	end repeat
+	if tP is within mTable[65] then -- lunarPase Rect
+		return "moon"
+	end if
+	repeat with tC from 43 up to 49
+		if tP is within mTable[tC] then
+			return mDayNames[tC-42]
+		end if
+	end repeat
+	put ["OK","dateInfo","monthAndYear","left","right","leftleft","rightright", \
+			"left1","left3","left6","left12","right1","right3","right6","right12","moon"] into tL
+	repeat with tC from 50 up to 64
+		if not mUseMonthArrows and tC is in [53,54,55,56] then -- arrows
+			next repeat
+		end if
+		if tP is within mTable[tC] then
+			return tL[tC-49]
+		end if
+	end repeat
+	return ""
+end handler
+
+--
+handler setInfo(in pB as Boolean) returns nothing
+	variable tS as String
+	put mClickedDay into tS
+	if tS is "" then
+		put "1" into tS
+		put 1 into mCurrentDay
+		put tS into mClickedDay
+		put mDayNames[1+dayCode(mCurrentYear, mCurrentMonth, mCurrentDay)] \
+				into mCurrentDayName
+	else if the offset of char 1 of mClickedDay in "0123456789" > 0 then
+			parse tS as number into mCurrentDay
+	end if
+	put (mCurrentYear formatted as string) &","& \
+		 (mCurrentMonth formatted as string) &","& tS into mSelectedDate
+	put mCurrentDayName & ", " & mMonthNames[mCurrentMonth] & " " & \
+				tS & ", " & (mCurrentYear formatted as string) into tS
+	put getMoonPhase(mCurrentYear,mCurrentMonth,mCurrentDay) into mCurrentMoon
+	if mSouthern then
+		put (8 - mCurrentMoon) mod 8 into mCurrentMoon
+	end if
+	if pB then
+		put ", " & (mCurrentMoon formatted as string) after tS
+	end if
+	put tS into mInfo
+end handler
+
+--
+handler setMyRect() returns nothing
+	variable tS as String
+	variable tL as String
+	put (mBaseW*mPickerScale) formatted as string into tS
+	if currently popped up then
+		set property "rect" of mE to "0,0," & tS & "," & tS
+	else
+		put property "loc" of mE into tL
+		set property "rect" of mE to "0,0," & tS & "," & tS
+		set property "loc" of mE to tL
+	end if
+end handler
+
+--
+handler setToday() returns nothing
+	variable tDate as List
+	put the local date into tDate
+	put tDate[1] into mCurrentYear
+	put tDate[2] into mCurrentMonth
+	put tDate[3] into mCurrentDay
+	put (tDate[1] formatted as string) &","& (tDate[2] formatted as string) & \
+		 	","& (tDate[1] formatted as string) into mSelectedDate
+end handler
+
+--
+handler updateCalendar() returns nothing
+	put hhCalendar([mCurrentYear,mCurrentMonth,1]) into mCalendar
+end handler
+
+--mark HH-HELPER
+
+-- mD0,mD1 mD7 are set in setDaysAndMonthsByType/createDayLists
+handler adjustWeekdays() returns nothing
+	if mWeekStart begins with "Mo" then
+		put mD1 into mDayNames
+	else if mWeekStart begins with "Sa" then
+		put mD7 into mDayNames
+	else -- if mWeekStart begins with "Su" then
+		put mD0 into mDayNames
+	end if
+end handler
+
+--
+handler cleanInput1(in pS as String) returns List
+	variable tL as List
+	replace " " with "" in pS
+   replace "\n" with "," in pS
+   replace ",," with "," in pS
+   split pS by "," into tL
+   return tL
+end handler
+
+-- needed for OnSave() and the property inspector
+handler hColorToString(in pC as Color) returns String
+	variable tS as String
+	if pC is nothing then
+		return "0,0,0,100"
+	end if
+	put htrunc(255*the red of pC) into tS
+	put "," & htrunc(255*the green of pC) after tS
+	put "," & htrunc(255*the blue of pC) after tS
+	put "," & htrunc(255*the alpha of pC) after tS
+	return tS
+end handler
+
+-- needed for OnLoad() and the property inspector
+handler hStringToColor(in pString as String) returns Color
+	if the number of chars in pString is 0 then
+		return color [0.0, 0.0, 0.0, 1.0]
+	end if
+	variable tList as List
+	split pString by "," into tList
+	variable tNum as Number
+	put the number of elements in tList into tNum
+	variable tR as Number
+	variable tG as Number
+	variable tB as Number
+	variable tA as Number
+	put ((element 1 of tList) parsed as number) into tR
+	put ((element 2 of tList) parsed as number) into tG
+	put ((element 3 of tList) parsed as number) into tB
+	if tNum = 4 then
+		put ((element 4 of tList) parsed as number) into tA
+		if not ("." is in pString) then
+			put tA/255 into tA
+		end if
+	else
+		put 1.0 into tA
+	end if
+ 	if "." is in pString then
+ 		return color [tR, tG, tB, tA]
+	else
+		return color [tR/255, tG/255, tB/255, tA]
+	end if
+end handler
+
+-- Element 1=year, 2=startMonth, 3=numberOfMonths, 4=startOnSunday
+handler hhCalendar(in pL as List) returns List
+	put [] into mDays
+	put [] into mTitle
+	variable tD as Number
+	variable tM as Number
+	variable tN as Number
+	variable tS as String
+	variable tS1 as String
+	variable dC as Number
+	variable dC1 as Number
+	put the number of elements in pL into tN
+	if tN=1 then
+		push 1 onto pL
+	end if
+	if tN=2 then
+		push 1 onto pL
+	end if
+	put pL[2] into tM
+	put dayCode(pL[1],tM,1) into dC
+	repeat pL[3] times
+		if tM > 12 then
+			add 1 to pL[1]
+			put 1 into tM
+			put dayCode(pL[1],tM,1) into dC
+		end if
+		-- build Lists
+		push mMonthNames[tM] onto mTitle
+		push pL[1] formatted as string onto mTitle
+		repeat dC times
+			push "" onto mDays
+		end repeat
+		put daysInMonth(tM,pL[1]) into dC1
+		repeat with tD from 1 up to dC1
+			push tD formatted as string onto mDays
+		end repeat
+		repeat with tD from (dC + dC1) up to 42
+			push "" onto mDays
+		end repeat
+		put (dC + dC1) mod 7 into dC
+		add 1 to tM
+	end repeat
+	adjustWeekdays() --> sets dayNames
+	return mDays
+end handler
+
+--
+handler hRoundS(in pX as Number) returns String
+	return (the rounded of pX) formatted as string
+end handler
+
+-- round number pX to pD decimals as String
+handler hRoundSD(in pD as Number, in pX as Number) returns String
+	return ( (the rounded of (10^pD*pX))/10^pD ) formatted as string
+end handler
+
+-- round number pX to pD decimals as Number
+handler hRoundN(in pD as Number, in pX as Number) returns Number
+	return (the rounded of (10^pD*pX))/10^pD
+end handler
+
+--
+handler hTrunc(in pX as Number) returns String
+	return the trunc of pX formatted as string
+end handler
+
+--
+handler insetRect(in pN as Number, in tR as Rectangle) returns Rectangle
+	return rectangle [ pN+the left of tR,  pN+the top of tR, \
+							-pN+the right of tR,-pN+the bottom of tR]
+end handler
+
+--
+handler dayCode(in pY as Number, pM as Number, pD as Number) returns Number
+	-- Zeller's rule for y=year, m=month, d=day, returs sunday as 0
+	variable tD0 as Number
+	variable tD1 as Number
+	put the trunc of ((14-pM)/12) into tD0
+	add 12*tD0 - 2 to pM
+	subtract tD0 from pY
+	put (pD + the trunc of ((13*pM -1)/5) + pY + \
+		the trunc of (pY/4) - the trunc of (pY/100) + the trunc of (pY/400)) mod 7 into tD1
+	-- if mWeekStart is "Sunday" is default
+	if mWeekStart is "Monday" then
+		subtract 1 from tD1
+		if tD1 < 0 then
+			put 6 into tD1
+		end if
+	else if mWeekStart is "Saturday" then
+		add 1 to tD1
+		if tD1 > 6 then
+			put 0 into tD1
+		end if
+	end if
+	return tD1
+end handler
+
+--
+handler daysInMonth(in pM as Number, in pY as Number) returns Number
+	if ((pY mod 4 is 0 and pY mod 100 is not 0) or pY mod 400 is 0) then
+		return element pM of [31,29,31,30,31,30,31,31,30,31,30,31] -- leapYear
+	else
+		return element pM of [31,28,31,30,31,30,31,31,30,31,30,31]
+	end if
+end handler
+
+--
+handler getTime() returns String
+	variable tL as List
+	put the local date into tL
+	return hhNumToString(tL[4],2,0) & ":" & \
+			 hhNumToString(tL[5],2,0) & ":" & \
+			 hhNumToString(tL[6],2,0)
+end handler
+
+-- pLeadNum, pDecNum is the same as the number format "pLeadNum zeros . pDecNum zeros"
+handler hhNumToString(in pNum as Number,in pLeadNum as Number, in pDecNum as Number) returns String
+  variable tS as String
+  variable tN as Number
+  variable tC as Number
+  put the empty string into tS
+  if pNum < 0 then
+    put "-" into tS
+    multiply pNum by -1
+  end if
+  put the trunc of pNum into tN -- integer part
+  if tN = 0 then
+    repeat pLeadNum times
+      put "0" after tS
+    end repeat
+  else
+    repeat with tC from \
+        the maximum of pLeadNum-1 and (the trunc of the log of tN) down to 0
+      put the trunc of (tN/10^tC) formatted as string after tS
+      put tN mod 10^tC into tN
+    end repeat
+  end if
+  if pDecNum > 0 then -- fractional part
+    put "." after tS
+    put the rounded of (10^pDecNum*(pNum mod 1)) into tN
+    repeat with tC from pDecNum-1 down to 0
+      put the trunc of (tN/10^tC) formatted as string after tS
+      put tN mod 10^tC into tN
+    end repeat
+  end if
+  return tS
+end handler
+
+--
+handler hhItemsToNumList(in pS as String) returns List
+	variable tL1 as List
+	variable tL2 as List
+	variable tI as String
+	split pS by "," into tL1
+	put [] into tL2
+	repeat for each element tI in tL1
+		push tI parsed as number onto tL2
+	end repeat
+	return tL2
+end handler
+
+-- 0 = New Moon
+-- 1 = Waxing Crescent Moon
+-- 2 = Quarter Moon
+-- 3 = Waxing Gibbous Moon
+-- 4 = Full Moon
+-- 5 = Waning Gibbous Moon
+-- 6 = Last Quarter Moon
+-- 7 = Waning Crescent Moon
+handler getMoonPhase(in pY as Number, in pM as Number, in pD as Number)
+	 variable tJ as Number
+	 if pM < 3 then
+	 	subtract 1 from pY
+	 	add 12 to pM
+	 end if
+	 put 365.25*pY + 30.6*pM + pD - 694039.09 into tJ -- total days
+	 put (tJ/29.5305882) mod 1 into tJ  -- divide by the moon cycle
+	 return (the rounded of (8*tJ)) mod 8
+end handler
+
+--
+handler setDaysAndMonthsByType(in pT as String) returns nothing
+   if the lower of pT is "system" then
+		variable tS as String
+		variable tL as List
+		execute script "put the abbr system monthnames into s;" & \
+			"replace \q.\q with empty in s;replace cr with comma in s;" & \
+			"put the abbr system weekdaynames into t;" & \
+			"replace \q.\q with empty in t;replace cr with comma in t;" & \
+			"return s & \q.\q & t"
+		put the result into tS
+		split tS by "." into tL
+		split tL[1] by "," into mSystemMonthNames
+		split tL[2] by "," into mSystemDayNames
+		createDayLists(mSystemDayNames)
+		put mSystemMonthNames into mMonthNames
+	else if the lower of pT is "custom" then
+ 		createDayLists(mCustomDayNames)
+		put mCustomMonthNames into mMonthNames
+ 	else -- default "english"
+   	put "English" into mNamesToUse
+ 		createDayLists(kDayNames0)
+		put kMonthNames into mMonthNames
+    end if
+    updateCalendar() --> set mDayNames by calling adjustWeekDays
+	 redraw all
+end handler
+
+-- for speed up, if only startOfWeek is switched
+handler createDayLists(in pL as List) returns nothing
+		put pL into mD0 -- sunday to saturday
+		put [mD0[2],mD0[3],mD0[4],mD0[5],mD0[6],mD0[7],mD0[1]] into mD1
+		put [mD0[7],mD0[1],mD0[2],mD0[3],mD0[4],mD0[5],mD0[6]] into mD7
+end handler
+
+--
+handler doNothing(in pS as String) returns nothing
+end handler
+
+--mark GETTER & SETTER
+
+--
+handler getColorActive() returns String
+	return hColorToString(mColorActive)
+end handler
+
+--
+handler setColorActive(in pColor as String) returns nothing
+	put hStringToColor(pColor) into mColorActive
+	redraw all
+end handler
+
+--
+handler getColorActiveVar() returns String
+	return hColorToString(mColorActiveVar)
+end handler
+
+--
+handler setColorActiveVar(in pColor as String) returns nothing
+	put hStringToColor(pColor) into mColorActiveVar
+	redraw all
+end handler
+
+--
+handler getColorBack() returns String
+	return hColorToString(mColorBack)
+end handler
+
+--
+handler setColorBack(in pColor as String) returns nothing
+	put hStringToColor(pColor) into mColorBack
+	redraw all
+end handler
+
+--
+handler getColorBackVar() returns String
+	return hColorToString(mColorBackVar)
+end handler
+
+--
+handler setColorBackVar(in pColor as String) returns nothing
+	put hStringToColor(pColor) into mColorBackVar
+	redraw all
+end handler
+
+--
+handler getColorBorder() returns String
+	return hColorToString(mColorBorder)
+end handler
+
+--
+handler setColorBorder(in pColor as String) returns nothing
+	put hStringToColor(pColor) into mColorBorder
+	redraw all
+end handler
+
+--
+handler getColorEmpty() returns String
+	return hColorToString(mColorEmpty)
+end handler
+
+--
+handler setColorEmpty(in pColor as String) returns nothing
+	put hStringToColor(pColor) into mColorEmpty
+	redraw all
+end handler
+
+--
+handler getColorFore() returns String
+	return hColorToString(mColorFore)
+end handler
+
+--
+handler setColorFore(in pColor as String) returns nothing
+	put hStringToColor(pColor) into mColorFore
+	redraw all
+end handler
+
+--
+handler getColorForeVar() returns String
+	return hColorToString(mColorForeVar)
+end handler
+
+--
+handler setColorForeVar(in pColor as String) returns nothing
+	put hStringToColor(pColor) into mColorForeVar
+	redraw all
+end handler
+
+--
+handler getColorHilite() returns String
+	return hColorToString(mColorHilite)
+end handler
+
+--
+handler setColorHilite(in pColor as String) returns nothing
+	put hStringToColor(pColor) into mColorHilite
+	redraw all
+end handler
+
+--
+handler getColorWidgetBack() returns String
+	return hColorToString(mColorWidgetBack)
+end handler
+
+--
+handler setColorWidgetBack(in pColor as String) returns nothing
+	put hStringToColor(pColor) into mColorWidgetBack
+	redraw all
+end handler
+
+--
+handler invertColor(in pC as Color) returns Color
+	set the red of pC   to 1-the red of pC
+	set the green of pC to 1-the green of pC
+	set the blue of pC  to 1-the blue of pC
+	return pC
+end handler
+
+--
+handler invertCurrentColors() returns nothing
+	put invertColor(mColorActive) into mColorActive
+	put invertColor(mColorActiveVar) into mColorActiveVar
+	put invertColor(mColorBack) into mColorBack
+	put invertColor(mColorBackVar) into mColorBackVar
+	put invertColor(mColorBorder) into mColorBorder
+	put invertColor(mColorEmpty) into mColorEmpty
+	put invertColor(mColorFore) into mColorFore
+	put invertColor(mColorForeVar) into mColorForeVar
+	put invertColor(mColorHilite) into mColorHilite
+	put invertColor(mColorWidgetBack) into mColorWidgetBack
+end handler
+
+--
+handler defaultColors(in pS as String) returns nothing
+	variable tC as Number
+	variable tL as List
+	variable tL1 as List
+	split tL by "\n" into tL
+	repeat with tC from 1 up to 10
+		split tL[tC] by "," into tL1
+		put tL1[2] into tL[tC]
+	end repeat
+	put hStringToColor(tL[1]) 	into mColorActive
+	put hStringToColor(tL[2]) 	into mColorActiveVar
+	put hStringToColor(tL[3]) 	into mColorBack
+	put hStringToColor(tL[4]) 	into mColorBackVar
+	put hStringToColor(tL[5]) 	into mColorBorder
+	put hStringToColor(tL[6]) 	into mColorEmpty
+	put hStringToColor(tL[7]) 	into mColorFore
+	put hStringToColor(tL[8]) 	into mColorForeVar
+	put hStringToColor(tL[9]) 	into mColorHilite
+	put hStringToColor(tL[10]) into mColorWidgetBack
+end handler
+
+handler defaultColors2() returns nothing
+	put color [0.0,0.2,0.8,1.0] into mColorActive 		-- 0,51,153,255
+	put color [1.0,0.8,0.2,1.0] into mColorActiveVar	-- 255,204,102,255
+	put color [0.95,0.95,0.95]  into mColorBack 			-- 242,242,242,255
+	put color [0.2,0.2,0.2,1.0] into mColorBackVar 		-- 51,51,51,255
+	put color [0.2,0.2,0.2,1.0] into mColorBorder 		-- 51,51,51,255
+	put color [0.8,0.8,0.8,0.8] into mColorEmpty 		-- 204,204,204,204
+	put color [0.0,0.0,0.0,1.0] into mColorFore 			-- 0,0,0,255
+	put color [1.0,1.0,1.0,0.9] into mColorForeVar 		-- 255,255,255,229
+	put color [0.0,1.0,0.0,0.5] into mColorHilite 		-- 0,255,0,127
+	put color [0.7,0.7,0.7,1.0] into mColorWidgetBack 	-- 178,178,178,255
+end handler
+
+--
+handler getBaseTextSize() returns String
+	return hRoundS(mBaseTextSize)
+end handler
+
+--
+handler getBorderWidth() returns String
+	return hRoundS(mBorderWidth)
+end handler
+
+--
+handler setBorderWidth(in pN as Number) returns nothing
+	variable tN as Number
+	put the minimum of 12 and the rounded of pN into mBorderWidth
+	put insetRect(mBorderWidth/2,   				rectangle [0,0,mBaseW,mBaseW]) into mBaseBounds
+	put insetRect(mBorderWidth/2+mGrabLimit, 	rectangle [0,0,mBaseW,mBaseW]) into mBaseBounds0
+	redraw all
+end handler
+
+--
+handler setPickedDateBold(in pB as Boolean) returns nothing
+	put pB into mPickedDateBold
+	redraw all
+end handler
+
+--
+handler setPickedDateItalic(in pB as Boolean) returns nothing
+	put pB into mPickedDateItalic
+	redraw all
+end handler
+
+--
+handler getCustomDayNames() returns String
+	variable tS as String
+	combine mCustomDayNames with ", " into tS
+	return tS
+end handler
+
+--
+handler setCustomDayNames(in pS as String) returns nothing
+	variable tL as List
+	-- put "Custom" into mNamesToUse --dangerous with popup
+	put cleanInput1(pS) into tL
+	if the number of elements in tL is not 7 then
+		put kDayNames0 into mCustomDayNames
+	else
+		put tL into mCustomDayNames
+	end if
+	setDaysAndMonthsByType("Custom")
+	updateCalendar() --> sets mDayNames
+	redraw all
+end handler
+
+--
+handler getCustomMonthNames() returns String
+	variable tS as String
+	combine mCustomMonthNames with ", " into tS
+	return tS
+end handler
+
+--
+handler setCustomMonthNames(in pS as String) returns nothing
+	variable tL as List
+	-- put "Custom" into mNamesToUse --dangerous with popup
+	put cleanInput1(pS) into tL
+	if the number of elements in tL is not 12 then
+		put kMonthNames into mCustomMonthNames
+	else
+		put tL into mCustomMonthNames
+	end if
+	setDaysAndMonthsByType("Custom")
+	updateCalendar()
+	redraw all
+end handler
+
+--
+handler getDefaultColors() returns String
+	return "" & \
+	"colorActive," & hColorToString(mColorActive) 			& newline & \
+	"colorActiveVar," & hColorToString(mColorActiveVar)	& newline & \
+	"colorBack," & hColorToString(mColorBack) 				& newline & \
+	"colorBackVar," & hColorToString(mColorBackVar) 		& newline & \
+	"colorBorder," & hColorToString(mColorBorder) 			& newline & \
+	"colorEmpty," & hColorToString(mColorEmpty) 				& newline & \
+	"colorFore," & hColorToString(mColorFore) 				& newline & \
+	"colorForeVar," & hColorToString(mColorForeVar) 		& newline & \
+	"colorHilite," & hColorToString(mColorHilite) 			& newline & \
+	"colorWidgetBack," & hColorToString(mColorWidgetBack)
+end handler
+
+--
+handler setDefaultColors(in pS as String) returns nothing
+	defaultColors2()
+	redraw all
+end handler
+
+--
+handler getInvertedColors() returns String
+	return "" & \
+	"colorActive," & hColorToString(invertColor(mColorActive)) 			& newline & \
+	"colorActiveVar," & hColorToString(invertColor(mColorActiveVar))	& newline & \
+	"colorBack," & hColorToString(invertColor(mColorBack)) 				& newline & \
+	"colorBackVar," & hColorToString(invertColor(mColorBackVar)) 		& newline & \
+	"colorBorder," & hColorToString(invertColor(mColorBorder)) 			& newline & \
+	"colorEmpty," & hColorToString(invertColor(mColorEmpty)) 			& newline & \
+	"colorFore," & hColorToString(invertColor(mColorFore)) 				& newline & \
+	"colorForeVar," & hColorToString(invertColor(mColorForeVar)) 		& newline & \
+	"colorHilite," & hColorToString(invertColor(mColorHilite)) 			& newline & \
+	"colorWidgetBack," & hColorToString(invertColor(mColorWidgetBack))
+end handler
+
+--
+handler setInvertedColors(in pS as String) returns nothing
+	invertCurrentColors()
+	redraw all
+end handler
+
+--mark SETTER only
+
+--
+handler setAllowGrab(in pB as Boolean) returns nothing
+	put pB into mAllowGrab
+	redraw all
+end handler
+
+--
+handler setAllowScroll(in pB as Boolean) returns nothing
+	put pB into mAllowScroll
+	redraw all
+end handler
+
+--
+handler setBaseTextSize(in pS as String) returns nothing
+	variable tN as Number
+	parse pS as number into tN
+	put the maximum of 10 and (the minimum of 16 and the rounded of tN) into mBaseTextSize
+	redraw all
+end handler
+
+--
+handler setBorderRoundRadius(in pN as Number) returns nothing
+	put the minimum of 16 and (the rounded of pN) into mBorderRoundRadius
+	redraw all
+end handler
+
+--
+handler setDayNamesBold(in pB as Boolean) returns nothing
+	put pB into mDayNamesBold
+	redraw all
+end handler
+
+--
+handler setDayNamesItalic(in pB as Boolean) returns nothing
+	put pB into mDayNamesItalic
+	redraw all
+end handler
+
+--
+handler setDaysBold(in pB as Boolean) returns nothing
+	put pB into mDaysBold
+	redraw all
+end handler
+
+--
+handler setDaysItalic(in pB as Boolean) returns nothing
+	put pB into mDaysItalic
+	redraw all
+end handler
+
+--
+handler setNamesToUse(in pS as String) returns nothing
+	put pS into mNamesToUse
+	setDaysAndMonthsByType(mNamesToUse)
+	updateCalendar() --> calls adjustWeekDays
+	redraw all
+end handler
+
+--
+handler setNoDateText(in pS as String) returns nothing
+	put pS into mNoDateText
+	put "" into mInfo
+	put "0" into mClickedDay
+	redraw all
+end handler
+
+--
+handler setPickerScale(in pN as Number) returns nothing
+	put pN into mPickerScale
+	setMyRect()
+	redraw all
+end handler
+
+--
+handler setPickerScaleOne(in pN as Number) returns nothing
+	setPickerScale(mPickerScaleOne)
+	put mPickerScale into mPickerScaleOne
+end handler
+
+--
+handler setSelectedDate(in pS as String) returns nothing
+	variable tL as List
+	variable tS as String
+	if pS is "" or pS is "today" then
+		setToday()
+		put mCurrentDay formatted as string into mClickedDay
+	else
+		replace " " with "" in pS
+		split pS by "," into tL
+		repeat 3-the number of elements in tL times
+			push "1" onto tL
+		end repeat
+		parse tL[1] as number into mCurrentYear
+		parse tL[2] as number into mCurrentMonth
+		put the rounded of mCurrentYear into mCurrentYear
+		put the rounded of (the minimum of (the maximum of 1 and mCurrentMonth) and 12) \
+				 into mCurrentMonth
+		parse tL[3] as number into mCurrentDay
+		parse tL[3] as number into mCurrentDay
+		put the rounded of (the minimum of (the maximum of 1 and mCurrentDay) and \
+			daysInMonth(mCurrentMonth,mCurrentYear)) into mCurrentDay
+		put mCurrentDay formatted as string into tS
+		put tS into mClickedDay
+	end if
+	updateCalendar()         --> sets mSelectedDate year,month
+	setInfo(mShowLunarPhase) --> sets mSelectedDate year,month,day
+	put false into mShowInfo --> popup bug, gets correct dayNames not before mouseDown
+	setMyRect()
+	redraw all
+end handler
+
+--
+handler setShowLunarPhase(in pB as Boolean) returns nothing
+	put pB into mShowLunarPhase
+	setInfo(pB)
+	redraw all
+end handler
+
+--
+handler setShowTime(in pB as Boolean) returns nothing
+	put pB into mShowTime
+	schedule timer in 0.032 seconds
+	redraw all
+end handler
+
+--
+handler setSouthern(in pB as Boolean) returns nothing
+	put pB into mSouthern
+	setInfo(mShowLunarPhase)
+	redraw all
+end handler
+
+--
+handler setTitleBold(in pB as Boolean) returns nothing
+	put pB into mTitleBold
+	redraw all
+end handler
+
+--
+handler setTitleItalic(in pB as Boolean) returns nothing
+	put pB into mTitleItalic
+	redraw all
+end handler
+
+--
+handler setUseMonthArrows(in pB as Boolean) returns nothing
+	put pB into mUseMonthArrows
+	redraw all
+end handler
+
+--
+handler setWeekStart(in pS as String) returns nothing
+	put pS into mWeekStart
+	updateCalendar()
+	redraw all
+end handler
+
+--
+handler hInfo() returns String
+	return "++The following handlers are passed " & \
+	"(usable in the script of your widget): mouseEnter, mouseLeave and mouseUp. \n" & \
+	" \n" & \
+	"WARNING: The input must be a valid date. It is NOT (really) checked. " & \
+	"An empty selectedDate-string \q\q will start with the local \qtoday\q. \n\n" & \
+	"If the user selects a day (and not before that), the full date appears at " & \
+	"the bottom of the widget and a button \qOK\q.\n\n" & \
+	"Simple useCase: \n" & \
+	" \n" & \
+	"on mouseUp \n" & \
+	"   put \q2018,12\q into tP[\qcurrentDate\q] -- or \q2018,12,23\q \n" & \
+	"   popup \qcommunity.livecode.hermann.datepicker\q \\ \n" & \
+	"       at the clickLoc with properties tP \n" & \
+	"   if it is not empty then put it \n" & \
+	"   -- item 1 to 3 of it is year,month,day. \n" & \
+	"end mouseUp \n" & \
+	" \n" & \
+	"Clicking OK closes the widget, clicking outside of the widget" & \
+	" closes too and cancels, leaving the variable it empty. \n" & \
+	" \n" & \
+	"A standard widget (non-popup) sends by clicking OK a message \n" & \
+	" \n" & \
+	"selectedDateOfWidget \qp1,p2,p3,p4,p5,p6,p7\q \n" & \
+	" \n" & \
+	"where p1,p2,p3,p4,p5,p6,p7 is, as it above: \n" & \
+	"p1 = selected year (number), \n" & \
+	"p2 = selected month (number), \n" & \
+	"p3 = selected dayOfMonth (number), \n" & \
+	"p4 = selected dayOfWeek (number in current order), \n" & \
+	"p5 = selected dayOfWeek name, \n" & \
+	"p6 = selected month name, \n" & \
+	"p7 = selected day's lunarPhase (number). \n" & \
+	" \n" & \
+	"for example \n" & \
+	"selectedDateOfWidget \q2018,10,23,6,SA,October,4\q \n" & \
+	" \n" & \
+	"++ Use also (optionally) the scrollWheel to switch between months. \n" & \
+	"++ Click at the title (month and year) to select today. \n" & \
+	"++ Drag a non-popup widget by grabbing its 'border region'. \n" & \
+	"++ Click the monthArrows or change-month-button once for a one-step, " & \
+	"hold the mouse down for a fast change. \n" & \
+	" \n" & \
+	"++ With a standard widget you can script: \n\n" & \
+	" do \qchangeMonth M\q in [widget] \n" & \
+	"where M is an integer in range -12 to 12. \n\n" & \
+	"do \qresetColors\q in [widget] (resets to default colors). \n\n" & \
+	"do \qinvertColors\q in [widget] (inverts current colors). \n" & \
+	""
+end handler
+
+--mark PROPERTIES
+
+--mark BASIC
+
+--mark  selectedDate
+/**
+Syntax:
+get the selectedDate of widget
+set the selectedDate of widget to "year,month,day"
+
+Parameters: (also for the return of get)
+year=4-digit year, month=month number, day=day number
+
+Example:
+set the selectedDate of widget to "" -- selects "today"
+set the selectedDate of widget to "2018,12"
+set the selectedDate of widget to "2018,12,24"
+get the selectedDate of widget -- returns "2018,12,24"
+
+Summary: Get/set the selectedDate.
+
+Description:
+Getting the selected date will return "year,month,day", or "year,month" if no day is selected.
+Setting the selected date to be displayed may be done as"year,month,day", or "month,year" with no day selected. If day is empty then only year and month are shown, no day is selected.
+WARNING: The input must be a valid date. It is NOT (really) checked.
+An empty input string "" (or "today") will start with the local date "today".
+**/
+property "selectedDate" get mSelectedDate set setSelectedDate
+metadata selectedDate.editor is "com.livecode.pi.string"
+
+--mark  noDateText
+/**
+Syntax:
+get the noDateText of widget
+set the noDateText of widget to [text]
+
+Parameters: text is 0 to 24 chars
+
+Summary: Get/set the noDateText.
+
+Description:
+Get/set the noDateText, that is displayed if the user did not yet select a day from the currently visible month.
+**/
+property "noDateText" get mNoDateText set setNoDateText
+metadata noDateText.editor is "com.livecode.pi.string"
+
+--mark  allowGrab
+/**
+Syntax:
+get the allowGrab of widget
+set the allowGrab of widget to trueOrFalse
+
+Summary: Whether the widget can be dragged around (NOT allowed for the popup).
+
+Description:
+If true then the widget can be dragged by grabbing its "border region" (whether border is drawn or not).
+**/
+property "allowGrab" get mAllowGrab set setAllowGrab
+
+--mark  allowScroll
+/**
+Syntax:
+get the allowScroll of widget
+set the allowScroll of widget to trueOrFalse
+
+Summary: Whether to change months by the scroll wheel or not.
+
+Description:
+Determines whether the change months can be done by the scroll wheel or not. Changing by scroll wheel is very fast and can be nasty in some scenarios. But it is often simpler than clicking to change months.
+**/
+property "allowScroll" get mAllowScroll set setAllowScroll
+
+--mark  showTime
+/**
+Syntax:
+get the showTime of widget
+set the showTime of widget to trueOrFalse
+
+Summary: Hide/show the local time.
+
+Description:
+Hide/show the local time (as HH:MM:SS) in the widget.
+**/
+property "showTime" get mShowTime set setShowTime
+
+--mark  showLunarPhase
+/**
+Syntax:
+get the showLunarPhase of widget
+set the showLunarPhase of widget to trueOrFalse
+
+Summary: Hide/show the lunar phase of the widget's selected day.
+
+Description:
++++ The lunar phase is only visible if a date is selected! +++
+Get/set the visibilty of the lunar phase. Set the hemisphere for the view by property southernHemisphere. For the lunar phase see https://en.wikipedia.org/wiki/Lunar_phase .
+**/
+property "showLunarPhase" get mShowLunarPhase set setShowLunarPhase
+
+--mark  southernHemisphere
+/**
+Syntax:
+get the southernHemisphere of widget
+set the southernHemisphere of widget to trueOrFalse
+
+Summary: Get/set the lunar phase view hemisphere.
+
+Description:
+Get/set the lunar phase view hemisphere who's visibility is set by the property showLunarPhase. For the hemisphere see https://en.wikipedia.org/wiki/Southern_Hemisphere .
+**/
+property "southernHemisphere" get mSouthern set setSouthern
+
+--mark  useMonthArrows
+/**
+Syntax:
+get the useMonthArrows of widget
+set the useMonthArrows of widget to trueOrFalse
+
+Summary: Get/set the change-month-method.
+
+Description:
+Get/set the change-month-method. If true arrow triangles are used else named buttons that change 1,3,6,or 12 months (forwards or backwards).
+**/
+property "useMonthArrows" get mUseMonthArrows set setUseMonthArrows
+
+--mark CONTENTS
+
+--mark  namesToUse
+/**
+Syntax: set the namesToUse of <widget> to [ English | System | Custom ]
+Syntax: get the namesToUse of <widget>
+
+Parameters:
+"English" = uses the english abbreviated names (default),
+"System" = uses the system provided abbreviated names,
+"Custom" = uses your custom settings (customDayNames and customMonthNames).
+
+Summary: The kind of names to use for days and months.
+
+Description:
+NamesToUse determines which abbreviated names are used for months and days.
+see also the description of properties customDayNames and customMonthNames.
+**/
+property "namesToUse" get mNamesToUse set setNamesToUse
+metadata namesToUse.editor is "com.livecode.pi.enum"
+metadata namesToUse.options is "Custom,English,System"
+metadata namesToUse.section is "Contents"
+
+--mark  weekStart
+/**
+Syntax:
+get the weekStart of widget
+set the weekStart of widget to [Sunday | Monday | Saturday]
+
+Summary: Get/set the weekStart.
+
+Description:
+Get/set the weekStart to sunday or monday or saturday.
+**/
+property "weekStart" get mWeekStart set setWeekStart
+metadata weekStart.editor is "com.livecode.pi.enum"
+metadata weekStart.options is "Monday,Sunday,Saturday"
+metadata weekStart.section is "Contents"
+
+--mark  customDayNamesSuToSa
+/**
+Syntax:
+get the customDayNamesSuToSa of widget
+set the customDayNamesSuToSa of widget to namesList
+
+Summary: Get/set the day names.
+
+Description:
+Set the custom day names as a comma-delimited list. Default is "Su,Mo,Tu,We,Th,Fr,Sa".
++++ ALWAYS give the day names in the order sunday to saturday.+++
+The widget reorders them for you if you set the week start to monday!
+**/
+property "customDayNamesSuToSa" get getCustomDayNames set setCustomDayNames
+metadata customDayNamesSuToSa.editor is "com.livecode.pi.string"
+metadata customDayNamesSuToSa.section is "Contents"
+
+--mark  customMonthNames
+/**
+Syntax:
+get the customMonthNames of widget
+set the customMonthNames of widget to namesList
+
+Summary: Get/set the month names.
+
+Description:
+Set the month names as a comma-delimited list. Default is "Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec".
+**/
+property "customMonthNames" get getCustomMonthNames set setCustomMonthNames
+metadata customMonthNames.editor is "com.livecode.pi.text"
+metadata customMonthNames.section is "Contents"
+
+--mark COLORS
+
+--mark  borderRoundRadius
+/**
+Syntax:
+get the borderRoundRadius of widget
+set the borderRoundRadius of widget to <Integer>
+
+Summary: The borderRoundRadius of the widgets border.
+
+Description:
+Get/set the borderRoundRadius of the widget's border. This is here a non-negative integer in range 0 to 16.
+**/
+property borderRoundRadius get mBorderRoundRadius set setBorderRoundRadius
+metadata borderRoundRadius.editor is "com.livecode.pi.number"
+metadata borderRoundRadius.min 	is "0"
+metadata borderRoundRadius.max 	is "16"
+metadata borderRoundRadius.step 	is "1"
+metadata borderRoundRadius.section is "Colors"
+
+--mark  borderWidth
+/**
+Syntax:
+get the borderWidth of widget
+set the borderWidth of widget to <Integer>
+
+Summary: The width of the widgets border.
+
+Description:
+Get/set The width of the widget's border is a non-negative integer.
+**/
+property borderWidth get mBorderWidth set setBorderWidth
+metadata borderWidth.editor is "com.livecode.pi.number"
+metadata borderWidth.min 	is "0"
+metadata borderWidth.max 	is "12"
+metadata borderWidth.step 	is "1"
+metadata borderWidth.section is "Colors"
+
+--mark  resetColors
+/**
+Syntax:
+get the resetColors of widget
+set the resetColors of widget to "true".
+
+Summary: The defaultColors (for a reset).
+
+Description:
+Get the defaultColors returns a list of 10 lines.
+Item 1 is the name of the property, item 2 to 5 the RGBA color of the variable. You may use that for scripting the property values.
+Set (or clicking the button in the property inspector) resets to the widgets default colors.
+**/
+property "resetColors" get getDefaultColors set setDefaultColors
+metadata resetColors.editor 	is "com.livecode.pi.action"
+metadata resetColors.section 	is "Colors"
+
+--mark  invertedColors
+/**
+Syntax:
+get the invertedColors of widget
+set the invertedColors of widget to "true"
+
+Summary: Inverts all current colors.
+
+Description:
+Getr returns 10 lines where item 1 is the name of the property, item 2 to 5 the RGBA color of the variable. You may use that for scripting the property values.
+Set (or clicking the button in the property inspector) inverts all (settable) colors.
+This is NOT possible for a popup widget, there we have to invert the colors in LC Script.
+**/
+property "invertedColors" get getInvertedColors set setInvertedColors
+metadata invertedColors.editor is "com.livecode.pi.action"
+metadata invertedColors.section is "Colors"
+
+--mark  colorActive
+/**
+Syntax:
+get the colorActive of widget
+set the colorActive of widget to "r,g,b" or "r,g,b,a"
+where r(ed),g(reen),b(lue),a(lpha) are integers in range 0-255.
+
+Summary: Today items highlite.
+
+Description:
+The foreColor for highliting today items, button OK and the date info
+**/
+property "colorActive" get getColorActive set setColorActive
+metadata colorActive.editor	is "com.livecode.pi.colorwithalpha"
+metadata colorActive.section	is "Colors"
+
+--mark  colorActiveVar
+/**
+Syntax:
+get the colorActiveVar of widget
+set the colorActiveVar of widget to "r,g,b" or "r,g,b,a"
+where r(ed),g(reen),b(lue),a(lpha) are integers in range 0-255.
+
+Summary: ForeColor for today items.
+
+Description:
+The foreColor for highliting today items.
+**/
+property "colorActiveVar" get getColorActiveVar set setColorActiveVar
+metadata colorActiveVar.editor	is "com.livecode.pi.colorwithalpha"
+metadata colorActiveVar.section	is "Colors"
+
+--mark  colorBack
+/**
+Syntax:
+get the colorBack of widget
+set the colorBack of widget to "r,g,b" or "r,g,b,a"
+where r(ed),g(reen),b(lue),a(lpha) are integers in range 0-255.
+
+Summary: BackColor of day numbers.
+
+Description:
+The color for the back of days and title (month and year).
+**/
+property "colorBack" get getColorBack set setColorBack
+metadata colorBack.editor	is "com.livecode.pi.colorwithalpha"
+metadata colorBack.section	is "Colors"
+
+--mark  colorBackVar
+/**
+Syntax:
+get the colorBackVar of widget
+set the colorBackVar of widget to "r,g,b" or "r,g,b,a"
+where r(ed),g(reen),b(lue),a(lpha) are integers in range 0-255.
+
+Summary: BackColor for today, dayNames, monthArrows and month buttons.
+
+Description:
+The backColor for highliting today items, monthArrows (if mUseArrows is true) and month buttons (if mUseArrows is false).
+**/
+property "colorBackVar" get getColorBackVar set setColorBackVar
+metadata colorBackVar.editor		is "com.livecode.pi.colorwithalpha"
+metadata colorBackVar.section	is "Colors"
+
+--mark  colorBorder
+/**
+Syntax:
+get the colorBorder of widget
+set the colorBorder of widget to "r,g,b" or "r,g,b,a"
+where r(ed),g(reen),b(lue),a(lpha) are integers in range 0-255.
+
+Summary: Color for widget's frame.
+
+Description:
+The color for the frame/border of the widget, the border of the OK button and highliting the date info. Can be made transparent to have a custom view of the picker.
+**/
+property "colorBorder" get getColorBorder set setColorBorder
+metadata colorBorder.editor	is "com.livecode.pi.colorwithalpha"
+metadata colorBorder.section	is "Colors"
+
+--mark  colorEmpty
+/**
+Syntax:
+get the colorEmpty of widget
+set the colorEmpty of widget to "r,g,b" or "r,g,b,a"
+where r(ed),g(reen),b(lue),a(lpha) are integers in range 0-255.
+
+Summary: Color for empty day 'fields'.
+
+Description:
+The color for the padding empty days at beginning and end oof the current month.
+**/
+property "colorEmpty" get getColorEmpty set setColorEmpty
+metadata colorEmpty.editor	is "com.livecode.pi.colorwithalpha"
+metadata colorEmpty.section	is "Colors"
+
+--mark  colorFore
+/**
+Syntax:
+get the colorFore of widget
+set the colorFore of widget to "r,g,b" or "r,g,b,a"
+where r(ed),g(reen),b(lue),a(lpha) are integers in range 0-255.
+
+Summary: ForeColor of day numbers, title and time.
+
+Description:
+The color for drawing day numbers, title (month and year) and time (if mShowTimw is true).
+**/
+property "colorFore" get getColorFore set setColorFore
+metadata colorFore.editor		is "com.livecode.pi.colorwithalpha"
+metadata colorFore.section		is "Colors"
+
+--mark  colorForeVar
+/**
+Syntax:
+get the colorForeVar of widget
+set the colorForeVar of widget to "r,g,b" or "r,g,b,a"
+where r(ed),g(reen),b(lue),a(lpha) are integers in range 0-255.
+
+Summary: ForeColor of dayNames, monthArrows, change-month-buttons and OK-Button.
+
+Description:
+The color for the drawing the text of dayNames, monthArrows (if mUseArrows is true), change-month-buttons (if mUseArrows is false) and OK-Button.
+**/
+property "colorForeVar" get getColorForeVar set setColorForeVar
+metadata colorForeVar.editor		is "com.livecode.pi.colorwithalpha"
+metadata colorForeVar.section	is "Colors"
+
+--mark  colorHilite
+/**
+Syntax:
+get the colorHilite of widget
+set the colorHilite of widget to "r,g,b" or "r,g,b,a"
+where r(ed),g(reen),b(lue),a(lpha) are integers in range 0-255.
+
+Summary: Highlite Color.
+
+Description:
+The color used for highlighting the OK button, day numbers, title (month and year), month arrow (if mUseArrows is true) and change-month-buttons (if mUseArrows is false).
+**/
+property "colorHilite" get getColorHilite set setColorHilite
+metadata colorHilite.editor		is "com.livecode.pi.colorwithalpha"
+metadata colorHilite.section		is "Colors"
+
+--mark  colorWidgetBack
+/**
+Syntax:
+get the colorWidgetBack of widget
+set the colorWidgetBack of widget to "r,g,b" or "r,g,b,a"
+where r(ed),g(reen),b(lue),a(lpha) are integers in range 0-255.
+
+Summary: The widget's backColor.
+
+Description:
+The color that fills the widget's back.
+**/
+property "colorWidgetBack" get getColorWidgetBack set setColorWidgetBack
+metadata colorWidgetBack.editor	is "com.livecode.pi.colorwithalpha"
+metadata colorWidgetBack.section	is "Colors"
+
+--mark TEXT
+
+--mark  textFont
+/**
+Syntax:
+get the textFont of widget
+set the textFont of widget to fontName
+
+Summary: Get/set the widget's text font.
+
+Description:
+Get/set the widget's text font from script or from tab "Text" of the property inspector.
+Property pickerScale scales all of the widget accordingly (incl. the textFont).
+**/
+--metadata textFont.editor is "com.livecode.pi.enum"
+--metadata textFont.options is "execute: get the fontnames; sort it"
+metadata textSize.user_visible is "false"
+
+--mark  daysBold
+/**
+Syntax:
+get the daysBold of widget
+set the daysBold of widget to trueOrFalse
+
+Summary: The bold of the day numbers.
+
+Description:
+The widget's day numbers are optionally drawn in bold style.
+**/
+property "daysBold" get mDaysBold set setDaysBold
+metadata daysBold.section is "Text"
+
+--mark  daysItalic
+/**
+Syntax:
+get the daysItalic of widget
+set the daysItalic of widget to trueOrFalse
+
+Summary: The italic of the day numbers.
+
+Description:
+The widget's day numbers are optionally drawn in italic style (what is only possible if your font has an italic variant).
+**/
+property "daysItalic" get mDaysItalic set setDaysItalic
+metadata daysItalic.section is "Text"
+
+--mark  dayNamesBold
+/**
+Syntax:
+get the dayNamesBold of widget
+set the dayNamesBold of widget to trueOrFalse
+
+Summary: The bold of the day names.
+
+Description:
+The widget's day names are optionally drawn in bold style.
+**/
+property "dayNamesBold" get mDayNamesBold set setDayNamesBold
+metadata dayNamesBold.section is "Text"
+
+--mark  dayNamesItalic
+/**
+Syntax:
+get the dayNamesItalic of widget
+set the dayNamesItalic of widget to trueOrFalse
+
+Summary: The italic of the day names.
+
+Description:
+The widget's day names are optionally drawn in italic style (what is only possible if your font has an italic variant).
+**/
+property "dayNamesItalic" get mDayNamesItalic set setDayNamesItalic
+metadata dayNamesItalic.section is "Text"
+
+--mark  pickedDateBold
+/**
+Syntax:
+get the pickedDateBold of widget
+set the pickedDateBold of widget to trueOrFalse
+
+Summary: The bold of the clicked date.
+
+Description:
+The widget's clicked date (= the day number and the bottom date line) is optionally drawn in bold style (what is only possible if your font has a bold variant).
+**/
+property "pickedDateBold" get mPickedDateBold set setPickedDateBold
+metadata pickedDateBold.section is "Text"
+
+--mark  pickedDateItalic
+/**
+Syntax:
+get the pickedDateItalic of widget
+set the pickedDateItalic of widget to trueOrFalse
+
+Summary: The italic of the clicked date.
+
+Description:
+The widget's clicked date (= the day number and the bottom date line) is optionally drawn in italic style (what is only possible if your font has an italic variant).
+**/
+property "pickedDateItalic" get mPickedDateItalic set setPickedDateItalic
+metadata pickedDateItalic.section is "Text"
+
+--mark  titleBold
+/**
+Syntax:
+get the titleBold of widget
+set the titleBold of widget to trueOrFalse
+
+Summary: The bold of the title (= month and year).
+
+Description:
+The widget's title (= month and year) is optionally drawn in bold style (what is only possible if your font has a bold variant).
+
+**/
+property "titleBold" get mTitleBold set setTitleBold
+metadata titleBold.section is "Text"
+
+--mark  titleItalic
+/**
+Syntax:
+get the titleItalic of widget
+set the titleItalic of widget to trueOrFalse
+
+Summary: The italic of the title (= month and year).
+
+Description:
+The widget's title (= month and year) is optionally drawn in italic style (what is only possible if your font has an italic variant).
+**/
+property "titleItalic" get mTitleItalic set setTitleItalic
+metadata titleItalic.section is "Text"
+
+--mark  baseTextSize
+/**
+Syntax:
+get the baseTextSize of widget
+set the baseTextSize of widget to a number (in range 10 to 16)
+
+Summary: Adjust baseTextSize.
+
+Description:
+The baseTextSize is by default 13 and usually this should be fine.
+The widget scales the text automatically. Nevertheless, for special extended or condensed fonts this may need an adjustment. Such an adjustment can be done by setting the baseTextSize in range 10 to 16.
+**/
+property "baseTextSize" get mBaseTextSize set setBaseTextSize
+metadata baseTextSize.editor is "com.livecode.pi.number"
+metadata baseTextSize.section is "Text"
+metadata baseTextSize.min  is "10"
+metadata baseTextSize.max  is "16"
+metadata baseTextSize.step is "1"
+metadata baseTextSize.default is "13"
+
+--mark  pickerScale
+/**
+Syntax:
+get the pickerScale of widget
+set the pickerScale of widget to positiveNumber (in Range 0.8 to 2.8)
+
+Summary: Get/set the pickerScale.
+
+Description:
+Get/set the pickerScale. This scales the widget accordingly, so that fontSizes are autmatically adjusted. That's why you can't set the textSize of the display font, only the textFont(=fontName). Use the tab "Text" of the property inspector for that or simply script:
+set the textFont of [widget] to [fontName].
+**/
+property "pickerScale" get mPickerScale set setPickerScale
+metadata pickerScale.editor is "com.livecode.pi.number"
+metadata pickerScale.section is "Text"
+metadata pickerScale.min  is "0.8"
+metadata pickerScale.max  is "2.8"
+metadata pickerScale.step is "0.1"
+
+--mark  setPickerScaleToDefault
+property "setPickerScaleToDefault" get mPickerScaleOne set setPickerScaleOne
+metadata setPickerScaleToDefault.editor is "com.livecode.pi.action"
+metadata setPickerScaleToDefault.section is "Text"
+
+--mark  scaleDefault
+/**
+Syntax:
+get the scaleDefault of widget
+set the scaleDefault of widget to positiveNumber (in Range 0.8 to 2.8)
+
+Summary: Get/set the scaleDefault.
+
+Description:
+Get/set the scaleDefault. This is just to comfort setting from the property inspector (in case you have a scale default of 1.732 for example).
+**/
+property "scaleDefault" get mPickerScaleOne set mPickerScaleOne
+metadata scaleDefault.editor is "com.livecode.pi.number"
+metadata scaleDefault.section is "Text"
+metadata scaleDefault.min  is "0.8"
+metadata scaleDefault.max  is "2.8"
+metadata scaleDefault.step is "0.1"
+
+--mark ADVANCED
+
+--mark  hhInfo
+/**
+Syntax:
+get the hhInfo of widget
+
+Summary: A compact info, read only.
+
+Description:
+This is a compact info about using the widget as popup or, may then be hidden/shown or enabled/disabled, as permanent widget. See tab "Contents" of the property inspector.
+**/
+property "hhInfo" get hInfo set doNothing
+metadata hhInfo.editor is "com.livecode.pi.text"
+metadata hhInfo.section is "Advanced"
+
+property widgetVersion	get mWidgetVersion
+
+end widget

@@ -1,0 +1,1044 @@
+/**
+DigitClock v121 [-hh fecit, Oct 2016/Oct 2018]
+
+Widget 'DigitClock' displays a digital clock with an alarm (visible only). Coloring: The clock has an optional FengShui-colored frame and text. If used, the color is set depending on the time, see the (read only) property fengShuiColoring.
+The current setting is:
+_[from 05:00 to 10:00 color "morning green" = "0,204,153"]_,
+_[from 10:00 to 12:00 color "forenoon red" = "255,102,0"]_,
+_[from 12:00 to 15:00 color "noon yellow" = "255,204,102"]_,
+_[from 15:00 to 17:00 color "afternoon white" = "255,255,255"]_,
+_[from 17:00 to 22:00 color "evening light blue" = "102,102,255"]_,
+_[from 22:00 to 05:00 color "night blue" = "0,0,255"]_.
+The time may be chosen as local or with any offset to universal time (UTC).
+This "timezone" uses in the property inspector only the built-in LC editor.
+Full hour values are also available by RightClicking the widget.
+The offset may be set to any amount of seconds in the range -12*3600 to 12*3600.
+
+The widget passes the following messages to LC Script (you can use them in your widget's script):
+mouseDown (late), mouseEnter, mouseLeave, mouseUp.
+**/
+
+widget org.openxtalk.hermann.digitclock
+
+use com.livecode.canvas
+use com.livecode.widget
+use com.livecode.engine
+use com.livecode.math
+
+constant kWidgetVersion is "hhDigitClock_v121 [fat widget]"
+metadata title is "hhDClox"
+metadata author is "Hermann Hoch"
+metadata version is "1.2.1"
+/* version has rotation and correct local date (workaround) */
+metadata preferredSize is "256,39"
+metadata svgicon is "M0 63.5 C 0 127,0 127,144 127 C 288 127,288 127,288 63.5 C 288 0,288 0,144 0 C 0 0,0 0,0 63.5 M161.763 63.250 C 162.026 98,162.026 98,154.013 98 C 146 98,146 98,146 63.667 C 146 44.783,146.318 29.015,146.706 28.627 C 147.095 28.239,150.582 28.051,154.456 28.210 C 161.5 28.5,161.5 28.5,161.763 63.250 M47.358 35.470 C 65.991 38.791,76.679 48.857,77.775 64.116 C 78.903 79.832,69.185 91.852,51.661 96.416 C 44.083 98.390,30.543 99.423,23.608 98.557 C 18 97.856,18 97.856,18 65.928 C 18 34,18 34,28.750 34.035 C 34.663 34.054,43.036 34.7,47.358 35.470 M136.364 38.640 C 137.639 47.941,137.993 47.487,128.548 48.657 C 113.183 50.560,103.995 57.202,104.004 66.398 C 104.009 71.798,106.836 76.234,112.324 79.450 C 117.042 82.215,127.945 84.954,134.348 84.983 C 138.196 85,138.196 85,137.484 91.250 C 137.093 94.688,136.534 97.9,136.242 98.388 C 135.383 99.825,118.028 98.313,111.396 96.224 C 90.7 89.703,81.037 71.517,89.135 54.331 C 92.801 46.553,103.353 38.855,114 36.191 C 121.331 34.357,122.201 34.237,129.114 34.116 C 135.728 34,135.728 34,136.364 38.640 M34.791 66.185 C 34.5 85.230,34.5 85.230,39.867 84.675 C 51.084 83.515,59.544 76.817,60.703 68.178 C 62.168 57.255,54.049 49.640,38.791 47.628 C 35.083 47.139,35.083 47.139,34.791 66.185 M209.5 50.750 C 217.845 55.062,222.941 63.520,222.978 73.124 C 223.020 83.927,218.681 91.665,209.870 96.496 C 205.255 99.027,203.446 99.437,197 99.416 C 190.852 99.395,188.564 98.908,184.312 96.710 C 164.981 86.721,167.060 57.061,187.627 49.407 C 193.039 47.394,204.346 48.088,209.5 50.750 M246.5 56.044 C 249.250 60.419,251.794 63.998,252.154 63.999 C 252.513 64,255.134 60.373,257.977 55.941 C 260.879 51.418,263.663 48.097,264.323 48.372 C 264.970 48.642,267.863 49.650,270.750 50.614 C 273.637 51.577,276 52.750,276 53.221 C 276 53.692,273.265 58.144,269.923 63.115 C 266.580 68.086,264.059 72.712,264.321 73.394 C 264.583 74.077,267.543 78.816,270.899 83.927 C 276.377 92.270,277.787 95,276.619 95 C 276.410 95,273.305 96.104,269.720 97.454 C 263.201 99.907,263.201 99.907,257.525 90.954 C 254.403 86.029,251.715 82,251.551 82 C 251.386 82,248.860 85.713,245.936 90.250 C 243.012 94.787,240.347 98.836,240.014 99.246 C 239.235 100.205,227.763 95.789,227.282 94.345 C 227.081 93.744,229.898 88.887,233.541 83.551 C 240.165 73.850,240.165 73.850,234.144 64.675 C 230.832 59.629,227.982 54.898,227.811 54.162 C 227.540 52.996,237.287 48.387,240.5 48.161 C 241.050 48.123,243.750 51.670,246.5 56.044 M190.291 63.509 C 186.815 66.985,186.786 67.087,187.157 74.446 C 187.466 80.565,187.948 82.316,189.892 84.385 C 196.955 91.903,207.231 85.811,207.231 74.104 C 207.231 61.607,197.979 55.821,190.291 63.509Z"
+
+variable mAngle as Number
+variable mCentre as List
+variable mCountTarget as String
+variable mCurrentDate as String
+variable mCurrentTime as List
+variable mDateAndTimeText as String
+variable mDateColor as Color
+variable mDown as Boolean
+variable mE as ScriptObject
+variable mEffectDS as Effect
+variable mFillColor as Color
+variable mFontName as String
+variable mFontSize as Number
+variable mGrab as Boolean
+variable mLocalOffset as Number
+variable mMouse as Point
+variable mNothing as String
+variable mPlatform as String
+variable mRadius as Number
+variable mSavedTextFont as String
+variable mSavedTextSize as Number
+variable mScaleFontSize as Boolean
+variable mStrokeColor as Color
+variable mTimeZone as optional Number
+variable mUseDateColor as Boolean
+variable mUseFengShuiColors as Boolean
+variable mUseShadow as Boolean
+variable mWidgetVersion as String
+
+--
+public handler OnSave(out rProp as Array)
+  put the empty array into rProp
+  put mTimeZone into rProp["timeZone"]
+  put mUseDateColor into rProp["useDateColor"]
+  put mUseFengShuiColors into rProp["useFengShuiColors"]
+  put hhColorToString(mFillColor) into rProp["fillColor"]
+  put hhColorToString(mStrokeColor) into rProp["strokeColor"]
+  put hhColorToString(mDateColor) into rProp["dateColor"]
+  put mAngle into rProp["angle"]
+  put mFontname into rProp["fontName"]
+  put mFontSize into rProp["fontSize"]
+  put mScaleFontSize into rProp["scaleFontSize"]
+  put mUseShadow into rProp["useShadow"]
+end handler
+
+--
+public handler OnLoad(in rProp as Array)
+  put kWidgetVersion into mWidgetVersion
+  put my script object into mE
+  if "timeZone" is not among the keys of rProp then
+    put nothing into mTimeZone -- local time
+  else
+    put rProp["timeZone"] into mTimeZone
+  end if
+  if "useDateColor" is not among the keys of rProp then
+    put true into mUseDateColor
+  else
+    put rProp["useDateColor"] into mUseDateColor
+  end if
+  if "useFengShuiColors" is not among the keys of rProp then
+    put true into mUseFengShuiColors
+  else
+    put rProp["useFengShuiColors"] into mUseFengShuiColors
+  end if
+    put rProp["useFengShuiColors"] into mUseFengShuiColors
+  if "fillColor" is not among the keys of rProp then
+    setFillColor("0.8, 0.8, 0.8")
+  else
+    setFillColor(rProp["fillColor"])
+  end if
+  if "strokeColor" is not among the keys of rProp then
+    setStrokeColor("1.0, 1.0, 0.0")
+  else
+    setStrokeColor(rProp["strokeColor"])
+  end if
+  if "dateColor" is not among the keys of rProp then
+    setDateColor("0.0, 0.0, 1.0")
+  else
+    setDateColor(rProp["dateColor"])
+  end if
+  put outer shadow effect into mEffectDS
+  set the color of mEffectDS to color[0.0,0.0,0.0]
+  set the size of mEffectDS to 1
+  set the spread of mEffectDS to 0
+  set the distance of mEffectDS to 3
+  if "fontName" is not among the keys of rProp then
+    put "Verdana" into mFontName
+  else
+    put rProp["fontName"] into mFontName
+  end if
+  if "fontSize" is not among the keys of rProp then
+    put 13 into mFontSize
+  else
+    put rProp["fontSize"] into mFontSize
+  end if
+  if "scaleFontSize" is not among the keys of rProp then
+    put true into mScaleFontSize
+  else
+    put rProp["scaleFontSize"] into mScaleFontSize
+  end if
+  if "angle" is not among the keys of rProp then
+    setAngle(0)
+  else
+    setAngle(rProp["angle"])
+  end if
+	if "useShadow" is not among the keys of rProp then
+		put false into mUseShadow
+	else
+		put rProp["useShadow"] into mUseShadow
+	end if
+end handler
+
+--
+public handler OnCreate()
+  put kWidgetVersion into mWidgetVersion
+  put my script object into mE
+  put false into mDown
+  put false into mGrab
+  put "" into mNothing
+  put nothing into mTimeZone -- local time
+  put [0,0,0,0,0,0,0] into mCurrentTime
+  put false into mUseFengShuiColors
+  put true into mUseDateColor
+  put color [0.95,0.95,0.95] into mFillColor
+  put color [0.0,0.0,0.1] into mStrokeColor
+  put color [0.0,0.0,0.0] into mDateColor
+  put 0 into mAngle
+  put "Verdana" into mSavedTextFont
+  put "Verdana" into mFontName
+  put 13 into mSavedTextSize
+  put 13 into mFontSize
+  put true into mScaleFontSize
+  put outer shadow effect into mEffectDS
+  set the color of mEffectDS to color[0.0,0.0,0.0]
+  set the spread of mEffectDS to 0
+  set the size of mEffectDS to 0.08*mFontSize
+  set the distance of mEffectDS to 0.25*mFontSize
+  set the angle of mEffectDS to mAngle+60
+  put false into mUseShadow
+  put my width/2 into mRadius
+  put "[-hh fecit, 2016-2018]" into mDateAndTimeText
+end handler
+
+--
+public handler OnPaint()
+  --variable tMS as Number          -- timing
+  --put the universal time into tMS -- timing
+  variable tMax as Number
+  variable tPath as Path
+  put the maximum of my width and my height into tMax
+  if mAngle=0 then
+    put my width/2 into mRadius
+  else
+    put my height/2 into mRadius
+  end if
+  if mScaleFontSize then
+    put the maximum of 10 and the rounded of (mRadius*0.1) into mFontSize
+  end if
+  set the size of mEffectDS to 0.08*mFontSize
+  set the distance of mEffectDS to 0.25*mFontSize
+  put [my width/2, my height/2] into mCentre
+  variable tBounds as Rectangle
+  variable tFSColor as Color
+  if mUseFengShuiColors then
+    variable hT as Number
+    variable hColor as String
+    put element 4 of mCurrentTime into hT
+    if hT < 5 then -- night blue
+      put "0,0,255" into hColor
+    else if hT < 10 then -- morning green
+      put "0,204,153" into hColor
+    else if hT < 12  then -- forenoon red
+      put "255,102,0" into hColor
+    else if hT < 15  then -- noon yellow
+      put "255,204,102" into hColor
+    else if hT < 17  then -- afternoon white
+      put "255,255,255" into hColor
+    else if hT < 22  then -- evening light blue
+      put "102,102,255" into hColor
+    else -- night blue
+      put "0,0,255" into hColor
+    end if
+    put hhStringToColor(hColor) into tFSColor
+  end if
+  if mUseShadow then
+    begin layer with mEffectDS on this canvas
+  end if
+	translate this canvas by mCentre
+	rotate this canvas by mAngle
+	-- frame
+	put rounded rectangle path of rectangle [-0.98*mRadius, -1.35*mFontsize+0.020*mRadius, 0.98*mRadius, 1.45*mFontsize-0.036*mRadius] with radius mFontSize/2 into tPath
+	set the paint of this canvas to solid paint with mFillColor
+	fill tPath on this canvas
+	set the stroke width of this canvas to the maximum of 2 and mFontsize*0.25
+	if mUseFengShuiColors then
+		set the paint of this canvas to solid paint with tFSColor
+	else
+		set the paint of this canvas to solid paint with mStrokeColor
+	end if
+	stroke tPath  on this canvas
+	-- date
+	variable tText as String
+	put mDateAndTimeText into tText -- other variants are coming ...
+	variable tBounds2 as Rectangle
+	variable tFont as Font
+	if mScaleFontSize then
+		put font "Verdana" at size mFontSize into tFont
+	else
+		put font mFontName at size mFontSize into tFont
+	end if
+	set the font of this canvas to tFont
+	put the bounds of text tText with tFont into tBounds2
+	if mUseDateColor or not mUseFengShuiColors then
+		set the paint of this canvas to solid paint with mDateColor
+	else
+		set the paint of this canvas to solid paint with tFSColor
+	end if
+	fill text tText at point [- the width of tBounds2/2, 0.30*mFontSize] on this canvas
+  if mUseShadow then
+  	end layer on this canvas
+  end if
+  -- log the universal time - tMS -- is in average 4 millisecs
+end handler
+
+--
+handler setSize()
+  variable tVar as String
+  put (3*mFontSize) formatted as string into tVar
+  if mAngle=0 then
+    post ("set width of me to max(256,the width of me) ; set height of me to " & tVar)
+  else
+    post ("set height of me to max(256,the height of me) ; set width of me to " & tVar)
+  end if
+end handler
+
+--
+public handler OnMouseDown()
+	put false into mGrab
+	put true into mDown
+	put the click position into mMouse
+	if the click button is 3 then
+	 variable tOffset as Number
+	 variable tCurrent as Number
+	 put (mLocalOffset/3600) into tOffset
+	 if mTimeZone is nothing then
+		put tOffset into tCurrent
+	 else
+		put (mTimeZone/3600) into tCurrent
+	 end if
+	 variable tC as Number
+	 variable tString as String
+	 variable tMenu as String
+	 variable tMenuL as List
+	 put the empty list into tMenuL
+	 push "Start Clock" onto tMenuL
+	 push "Stop Clock" onto tMenuL
+	 push "-" onto tMenuL
+	 push "Angle -90" onto tMenuL
+	 push "Angle 90" onto tMenuL
+	 push "Angle 0" onto tMenuL
+	 push "-" onto tMenuL
+	 repeat with tC from -12 up to 12
+		if tC < 0 then
+		  put "UTC " & (tC formatted as string) & " h" into tString
+		else if tC > 0 then
+		  put "UTC +" & (tC formatted as string) & " h" into tString
+		else
+		  put "UTC " & (tC formatted as string) & " h" into tString
+		end if
+		if tC = tOffset then
+		  put " = local" after tString
+		end if
+		if tC = tCurrent then
+		  put " = current" after tString
+		end if
+		push tString onto tMenuL
+	 end repeat
+	 combine tMenuL with newline into tMenu
+	 popup menu tMenu at the mouse position
+	 if the result is not nothing then
+		variable tStringL as List
+		split the result by " " into tStringL
+		if tStringL[1] is "Angle" then
+			setAngle(tStringL[2] parsed as number)
+		else if tStringL[1] is "Start" then
+		  	cancel timer
+		  	schedule timer in 1- (the universal time mod 1) seconds
+		else if tStringL[1] is "Stop" then
+		  	cancel timer
+		else
+			put 3600*(tStringL[2] parsed as number) into mTimeZone
+			put hhSecondsToDate() into mCurrentTime
+		end if
+		redraw all
+	 end if
+	else if (the x of the click position < 8 or the x of the click position > my width  - 8 \
+	 		or the y of the click position < 8 or the y of the click position > my height - 8) then
+		put true into mGrab
+		schedule timer in 0.032 seconds
+	else
+	 	send "mouseDown" to mE with [the click button]
+	end if
+end handler
+
+--
+public handler OnMouseUp()
+  put false into mGrab
+  put false into mDown
+  send "mouseUp" to mE with [the click button]
+end handler
+
+--
+public handler OnMouseRelease()
+  put false into mGrab
+  put false into mDown
+  send "mouseRelease" to mE with [the click button]
+end handler
+
+--
+public handler OnMouseEnter()
+  send "mouseEnter" to mE
+end handler
+
+--
+public handler OnMouseLeave()
+  send "mouseLeave" to mE
+end handler
+
+--
+public handler OnOpen()
+	execute script "return (the platform is quote&win32&quote)"
+	if the result then
+	 put "Win32" into mPlatform
+	else
+	 put "MacOS or Linux" into mPlatform
+	end if
+	put hhSecondsToDate() into mCurrentTime
+	cancel timer
+	schedule timer in 1- (the universal time mod 1) seconds
+	setSize()
+end handler
+
+public handler OnClose()
+  cancel timer
+end handler
+
+--
+public handler OnTimer()
+	if mGrab then --> GRAB
+		variable tMouse as Point
+		put the mouse position into tMouse
+		variable tRect as Rectangle
+		put my rectangle into tRect
+		set property "left" of mE to \
+			(the left of tRect + the x of tMouse - the x of mMouse)
+		set property "top"  of mE to \
+			(the top  of tRect + the y of tMouse - the y of mMouse)
+		redraw all
+		schedule timer in 0.032 seconds
+	else
+		schedule timer in 1 - (the universal time mod 1) seconds
+		--# timeAndDate line (formatted like the internet date):
+		put hhSecondsToDate() into mCurrentTime -- sets also mCurrentDate
+		put " " & mCurrentDate & " " into mDateAndTimeText
+	end if
+	redraw all
+end handler
+
+-- (Documented) PROPERTIES
+
+property widgetVersion get mWidgetVersion
+
+--mark angle
+/**
+Syntax:
+set the angle of <widget> to <pAngle>
+get the angle of <widget>
+
+Parameters:
+pAngle: The angle of rotation of the display in degrees
+is one of 0,90,-90.
+
+Example:
+-- rotate 90 degress clockwise
+set the angle of widget "DigitClock" to  90
+-- rotate 90 degrees counter-clockwise
+set the angle of widget "DigitClock" to -90
+
+Summary: The angle of rotation of the display as a whole.
+** The canvas bounds are adjusted after rotating. **
+
+Description:
+Use the angle property to rotate the display <pAngle> degrees clockwise (cw).
+**/
+property "angle"    get mAngle  set setAngle
+metadata angle.editor is "com.livecode.pi.enum"
+metadata angle.options is "0,90,-90"
+
+property "textFont" get mNothing set doNothing
+metadata textFont.user_visible is "false"
+property "textSize" get mNothing set doNothing
+metadata textSize.user_visible is "false"
+
+--mark digitfont
+/**
+Syntax:
+set the digitfont of <widget> to <pFontName>
+get the digitfont of <widget>
+
+Summary: Sets the textfont for the banner text. Choose from the fontnames. Default is "Verdana".
+
+Parameters:
+pFontName: The name of an available textfont.
+
+Example:
+set the digitfont of widget "DigitClock" to "Verdana"
+
+Description:
+Use the digitfont property to set the textfont for the clock's text.
+**/
+property digitfont get mFontName set setFontName
+metadata digitfont.section is "Text"
+metadata digitfont.editor is "com.livecode.pi.enum"
+metadata digitfont.options is "execute:get the fontnames; sort it"
+
+--mark digitfontsize
+/**
+Syntax:
+set the digitfontsize of <widget> to <pNumber>
+get the digitfontsize of <widget>
+
+Parameters:
+pNumber: A positive number in range 10 to 128
+
+Example:
+set the digitfontsize of widget "DigitClock" to 24
+
+Summary: Set or get the digitfontsize property for drawing the clock's text.
+**/
+property digitfontsize  get mFontSize set setFontSize
+metadata digitfontsize.editor  is "com.livecode.pi.number"
+metadata digitfontsize.min is "10"
+metadata digitfontsize.max is "128"
+metadata digitfontsize.step is "1"
+metadata digitfontsize.section is "Text"
+
+--mark useScaledVerdana
+/**
+Syntax:
+set the useScaledVerdana of <widget> to <pTrueOrFalse>
+get the useScaledVerdana of <widget>
+
+Summary:
+Sets or gets the font behaviour of the widget.
+
+Parameters:
+pTrueOrFalse: is true or false
+
+Example:
+set the useScaledVerdana of widget "DigitClock" to \
+not the useScaledVerdana of widget "DigitClock"
+
+Description:
+The font behaviour of the widget: If set to true then font "Verdana" is used at a size that is scaled dependent on the widget's size, any other font and size setting is then ignored. If useScaledVerdana is false then your choice of textFont and textSize is used, you have to adjust the textSize by yourself.
+**/
+property "useScaledVerdana"   get mScaleFontSize  set setScaleFontSize
+metadata useScaledVerdana.section is "Text"
+metadata useScaledVerdana.editor  is "com.livecode.pi.boolean"
+
+--mark dateColor
+/**
+Syntax:
+set the dateColor of <widget> to <pColor>
+get the dateColor of <widget>
+
+Summary: Sets or gets the color of the display's text (timeAndDate).
+
+Parameters:
+pColor: The dateColor, in RGB or RGBA format
+
+Example:
+set the dateColor of widget "DigitClock" to "255,127,0,127"
+set the dateColor of widget "DigitClock" to "255,127,0"
+-- returns a _four-item_ string
+get the dateColor of widget "DigitClock" -- "255,127,0,255"
+
+Description:
+Use the dateColor property to set the color of the clock's text display.This color is used if the useFengShuiColors property is set to false or the useDateColor property is set to true.
+The color is in the form of a 3 or 4 item string, the 4th optional item being the alpha value, all integers between 0 and 255.
+[You may also use numbers containing a decimal point between 0.0 and 1.0, for example "0.2,0.1,0.2".
+.: The "get" always returns _four_ items in the integer form (each in range 0-255). :.
+**/
+property "dateColor"    get getDateColor  set setDateColor
+metadata dateColor.section  is "Colors"
+metadata dateColor.editor is "com.livecode.pi.colorwithalpha"
+
+--mark fillColor
+/**
+Syntax:
+set the fillColor of <widget> to <pColor>
+get the fillColor of <widget>
+
+Summary:
+Sets or gets the color of the display's fill (background).
+
+Parameters:
+pColor: the fillColor, in RGB or RGBA format
+
+Example:
+set the fillColor of widget "DigitClock" to "255,127,0,127"
+set the fillColor of widget "DigitClock" to "255,127,0"
+-- returns a _four-item_ string
+get the fillColor of widget "DigitClock" -- "255,127,0,255"
+
+Description:
+Use the fillColor property to set the color of the display's background which is always used, may be fully transparent.
+The color is in the form of a 3 or 4 item string, the 4th optional item being the alpha value, all integers between 0 and 255.
+[You may also use numbers containing a decimal point between 0.0 and 1.0, for example "0.2,0.1,0.2".
+.: The "get" always returns _four_ items in the integer form (each in range 0-255). :.
+**/
+property "fillColor"    get getFillColor  set setFillColor
+metadata fillColor.section  is "Colors"
+metadata fillColor.editor is "com.livecode.pi.colorwithalpha"
+
+--mark strokeColor
+/**
+Syntax:
+set the strokeColor of <widget> to <pColor>
+get the strokeColor of <widget>
+
+Summary: Sets or gets the color of the display's frame.
+
+Parameters:
+pColor: The tip-color, in RGB or RGBA format
+
+Example:
+set the strokeColor of widget "DigitClock" to "255,127,0,127"
+set the strokeColor of widget "DigitClock" to "255,127,0"
+-- returns a _four-item_ string
+get the strokeColor of widget "DigitClock" -- "255,127,0,255"
+
+Description:
+Use the strokeColor property to set the color of the display's frame. This color is used if the useFengShuiColors property is set to false.
+The color is in the form of a 3 or 4 item string, the 4th optional item being the alpha value, all integers between 0 and 255.
+[You may also use numbers containing a decimal point between 0.0 and 1.0, for example "0.2,0.1,0.2".
+.: The "get" always returns _four_ items in the integer form (each in range 0-255). :.
+**/
+property "strokeColor"    get getStrokeColor  set setStrokeColor
+metadata strokeColor.section  is "Colors"
+metadata strokeColor.editor is "com.livecode.pi.colorwithalpha"
+
+--mark useShadow
+/**
+Syntax:
+set the useShadow of <widget> to <pTrueOrFalse>
+get the useShadow of <widget>
+
+Parameters:
+pTrueOrFalse: is true or false
+
+Example:
+set the useShadow of widget "DigitClock" to not \
+    the useShadow of widget "DigitClock"
+
+Summary: If set to true useShadow applies a (fixed, but scaled) dropShadow effect to the widget.
+
+Description:
+Use the useShadow property to add adropShadow effect to the digitClock's path. (No property of the effect is currently adjustable).
+**/
+property useShadow	get mUseShadow	set setUseShadow
+metadata useShadow.section	is "Colors"
+
+--mark timeZone
+/**
+Syntax:
+set the timeZone of <widget> to <pOffset>
+get the timeZone of <widget>
+
+Parameters:
+pOffset: is a number of seconds
+
+Example:
+-- set the offset to minus 2 hours and 30 minutes
+-- 'the internet date' show this as "-0230"
+set the timeZone of widget "DigitClock" to (-2*60 + 30)*60
+-- returns the current offset from UTC in seconds
+get the timeZone of widget "DigitClock"
+
+Summary: The time zone offset from UTC in seconds. Default is your local offset.
+
+Description:
+Use the timeZone property to display the time of a timezone that may be different from
+local time. If the timeZone property is set to empty, then the clock displays the local
+time and get the timeZone returns the local UTC-offset.
+**/
+property timeZone     get getTimeZone   set setTimeZone
+metadata timeZone.editor  is "com.livecode.pi.timezone"
+metadata timeZone.label   is "Timezone"
+metadata timeZone.default is ""
+
+--mark useDateColor
+/**
+Syntax:
+set the useDateColor of <widget> to <pTrueOrFalse>
+get the useDateColor of <widget>
+
+Parameters:
+pTrueOrFalse: is true or false
+
+Example:
+set the useDateColor of widget "DigitClock" to not \
+    the useDateColor of widget "DigitClock"
+
+Summary: Controls the use of the clock's dateColor (color of the text/date).
+
+Description:
+Use the useDateColor property also to override if poperty useFengShuiColors is set to true.
+*/
+property useDateColor       get mUseDateColor set setUseDateColor
+metadata useDateColor.editor  is "com.livecode.pi.boolean"
+metadata useDateColor.section  is "Colors"
+
+--mark useFengShuiColors
+/**
+Syntax:
+set the useFengShuiColors of <widget> to <pTrueOrFalse>
+get the useFengShuiColors of <widget>
+
+Parameters:
+pTrueOrFalse: is true or false
+
+Example:
+set the useFengShuiColors of widget "DigitClock" to not \
+    the useFengShuiColors of widget "DigitClock"
+
+Summary: Controls the coloring of frame (and optionally text) of the display.
+If useFengShuiColors is false then the strokeColor is used for the frame and the dateColor for the date/text.
+
+Description:
+Controls the coloring of the display's frame and, if useDateColor is false, of the display's text by FengShuiColors. These are explained in the widget's description.
+*/
+property useFengShuiColors      get mUseFengShuiColors set setUseFengShuiColors
+metadata useFengShuiColors.editor is "com.livecode.pi.boolean"
+metadata useFengShuiColors.section  is "Colors"
+
+--mark fengShuiColoring
+/**
+Syntax:
+get the fengShuiColoring of <widget>
+-- returns a 'header'-line and 7 value-lines of the form:
+-- stopHour,name,colorRed,colorGreen,colorBlue
+-- value-line 1 and 7 differ only in the first item.
+Summary: Gets the "hour ramps" and the coloring in the hours range defined by that ramps.
+
+Example:
+get the fengShuiColoring of widget "DigitClock"
+
+Description:
+Use the fengShuiColoring property to get an info, for example if you wish to adjust the hoursColor, minutesColor or secondsColor accordingly.
+The format are seven lines of text of the form _stopHour, name, colorRed, colorGreen, colorBlue_
+StopHour is an hour (an integer between 1 and 24), the color values are integers between 0 and 255.
+**/
+property "fengShuiColoring"   get getFengShuiColoring
+metadata fengShuiColoring.section  is "Colors"
+
+--
+public handler setAngle(in pValue as Number) returns nothing
+  if pValue = 90 or pValue = 0 or pValue = -90 or pValue = 270 then
+    put pValue into mAngle
+  else
+    put 0 into mAngle
+  end if
+  set the angle of mEffectDS to (60+mAngle)
+  setSize()
+  redraw all
+end handler
+
+--
+handler setFontName(in pFontName as String) returns nothing
+  put pFontName into mFontName
+  if mFontName is not "Verdana" then
+     put false into mScaleFontSize
+  end if
+  put hhSecondsToDate() into mCurrentTime
+  redraw all
+end handler
+
+--
+handler setFontSize(in pSize as Number) returns nothing
+  put the trunc of pSize into mFontSize
+  put hhSecondsToDate() into mCurrentTime
+  setSize()
+  redraw all
+end handler
+
+--
+handler setScaleFontSize (in pBool as Boolean) returns nothing
+  put pBool into mScaleFontSize
+  if mScaleFontSize then
+    put mFontName into mSavedTextFont
+    put mFontSize into mSavedTextSize
+    put "Verdana" into mFontName
+  else
+    put mSavedTextFont into mFontName
+    put mSavedTextSize into mFontSize
+  end if
+  put hhSecondsToDate() into mCurrentTime
+  setSize()
+  redraw all
+end handler
+
+--
+handler setUseDateColor (in pBool as Boolean) returns nothing
+  put pBool into mUseDateColor
+  put hhSecondsToDate() into mCurrentTime
+  redraw all
+end handler
+
+--
+handler setUseShadow(in pBool as Boolean) returns nothing
+	put pBool into mUseShadow
+	redraw all
+end handler
+
+--
+handler setUseFengShuiColors (in pBool as Boolean) returns nothing
+  put pBool into mUseFengShuiColors
+  put hhSecondsToDate() into mCurrentTime
+  redraw all
+end handler
+
+--
+handler setStrokeColor(in pColor as String) returns nothing
+  put hhStringToColor(pColor) into mStrokeColor
+  redraw all
+end handler
+
+--
+handler getStrokeColor() returns String
+  return hhColorToString(mStrokeColor)
+end handler
+
+--
+handler setFillColor(in pColor as String) returns nothing
+  put hhStringToColor(pColor) into mFillColor
+  redraw all
+end handler
+
+--
+handler getFillColor() returns String
+  return hhColorToString(mFillColor)
+end handler
+
+--
+handler setDateColor(in pColor as String) returns nothing
+  put hhStringToColor(pColor) into mDateColor
+  redraw all
+end handler
+
+--
+handler getDateColor() returns String
+  return hhColorToString(mDateColor)
+end handler
+
+handler getFengShuiColoring() returns String
+-- stopHour,name,colorRedChannel,colorGreenChannel,colorBlueChannel
+return "-- stopHour, name, colorRed, colorGreen, colorBlue" & newline & \
+  "5,night blue,0,0,255" & newline & \
+  "10,morning green,0,204,153" & newline & \
+  "12,forenoon red,255,102,0" & newline & \
+  "15,noon yellow,255,204,102" & newline & \
+  "17,afternoon white,255,255,255" & newline & \
+  "22,evening light blue,102,102,255" & newline & \
+  "24,night blue,0,0,255"
+end handler
+
+-- not used, here for completeness:
+-- converts a 6-element date into unix-seconds
+handler hhDateToSeconds(in pDate as List) returns Number
+  if pDate[2] < 3 then
+    subtract 1 from pDate[1]
+    add 12 to pDate[2]
+  end if
+  return (pDate[1]*365 + the trunc of (pDate[1]/4) - the trunc of (pDate[1]/100) + the trunc of (pDate[1]/400) + the trunc of ((3*pDate[2]+3)/5) + 30*pDate[2] + pDate[3] - 719561)*86400 + pDate[4]*3600 + pDate[5]*60 + pDate[6]
+end handler
+--
+handler doNothing(in pS as String) returns nothing
+end handler
+
+-- converts universal time + current UTC-offset to date
+handler hhSecondsToDate() returns List
+  variable tOffset as Number
+  put hhLocalOffset() into mLocalOffset
+  if mTimeZone is nothing then
+    put hhLocalOffset() into tOffset
+  else
+    put mTimeZone into tOffset
+  end if
+  return hhAnySecondsToDate(the universal time, tOffset)
+end handler
+
+-- LCS workaround
+handler hhLocalOffset() returns Number
+  variable tX as String
+  execute script "return word 6 of the internet date"
+  put the result into tX
+  return ((char 1 to 3 of tX) parsed as number)*3600  +  (((char 1 of tX) & (char 4 to 5 of tX)) parsed as number)*60
+end handler
+
+-- converts any unix-seconds to date
+handler hhAnySecondsToDate(in pU as Number, in pOffset as Number) returns List
+  variable tL as List
+  put [0,0,0,0,0,0,0] into tL
+  variable tU as Number
+  variable tS as Number
+  variable tB as Number
+  variable tC as Number
+  variable tD as Number
+  variable tE as Number
+  put pOffset into tL[7]
+  if mPlatform is "Win32" then
+    put the trunc of (pU + pOffset - mLocalOffset) into tU
+  else
+    put the trunc of (pU + pOffset) into tU
+  end if
+  put tU mod 86400 into tS
+  put the trunc of (tU/86400) into tU
+  put the trunc of (tS/3600) into tL[4]
+  put (the trunc of (tS/60)) mod 60 into tL[5]
+  put the trunc of (tS mod 60) into tL[6]
+  put 15+the trunc of ((tU*4+102032)/146097) into tS -- second use of tS
+  put tU+2442113+tS-the trunc of (tS/4) into tB
+  put the trunc of ((tB*20-2442)/7305) into tC
+  put tB-365*tC-the trunc of (tC/4) into tD
+  put the trunc of (tD*1000/30601) into tE
+  put tD-tE*30-the trunc of (tE*601/1000) into tL[3]
+  if tE < 14 then
+    put tC-4716 into tL[1]
+    put tE-1 into tL[2]
+  else
+    put tC-4715 into tL[1]
+    put tE-13 into tL[2]
+  end if
+  put myCurrentDate(tL) into mCurrentDate
+  return tL
+end handler
+
+-- format as the internet date, respects current UTC-offset
+handler myCurrentDate(in pList as List) returns String
+  -- Sun, 2 Oct 2016 12:11:38 +0200
+  variable tN as Number
+  variable tS as String
+  variable tL as List
+  put pList into tL
+  put dayOfWeek(tL) & ", " & (tL[3] formatted as string) & " " into tS
+  put char tL[2]*3-2 to tL[2]*3 of "JanFebMarAprMayJunJulAugSepOctNovDec" after tS
+  put " " & (tL[1] formatted as string) & " " after tS
+  put hhNumberToString(tL[4],2,0) & ":" & \
+    hhNumberToString(tL[5],2,0) & ":" & \
+    hhNumberToString(tL[6],2,0) & " " after tS
+  if tL[7] < 0 then
+    put "-" after tS
+    multiply tL[7] by -1
+  else
+    put "+" after tS
+  end if
+  put the trunc of (tL[7]/3600) into tN
+  put hhNumberToString(tN,2,0) after tS
+  put (the trunc of (tL[7]/60)) mod 60 into tN
+  put hhNumberToString(tN,2,0) after tS
+  return tS
+end handler
+
+-- CF Gauss method
+handler dayOfWeek (in pDate as List) returns String
+    if pDate[2] < 3 then
+      subtract 1 from pDate[1]
+  end if
+  variable tD as Number
+  put pDate[3] into tD
+  add ((char pDate[2] of "032503514624") parsed as number) to tD
+  -- gregorian:
+  add ((char 1+(the trunc of (pDate[1]/100) mod 4) of "0531") parsed as number) to tD
+  -- julian: add ((char 1+(the trunc of (pDate[1]/100) mod 7) of "5432106") parsed as number) into tD
+  add (pDate[1] mod 100) to tD
+  add the trunc of ((pDate[1] mod 100)/4) to tD
+  put 3*(tD mod 7) into tD
+  return char 1+tD to 3+tD of "SunMonTueWedThuFriSat"
+end handler
+
+-- not used, here for completeness:
+-- is element 4-6 of hhSecondsToDate()
+handler hhGetTimeComponents() returns List
+    variable tDate as List
+    variable tSeconds as Number
+    put [0,0,0,0] into tDate
+    put the universal time into tSeconds
+  if mTimeZone is not nothing then
+    put mTimeZone into tDate[4]
+  else
+    put hhLocalOffset() into tDate[4]
+  end if
+  put tSeconds mod 86400 into tSeconds
+  put the trunc of (tSeconds / 3600) into tDate[1]
+  put tSeconds mod 3600 into tSeconds
+  put the trunc of (tSeconds / 60) into tDate[2]
+  put (the trunc of tSeconds) mod 60 into tDate[3]
+  return tDate
+end handler
+
+--
+handler setTimeZone(in pTimeZone as optional Number) returns nothing
+  if not (pTimeZone is a number) then
+    if pTimeZone is not nothing then
+      throw "The timeZone offset must be a number or empty"
+    end if
+  end if
+  put pTimeZone into mTimeZone
+  put hhSecondsToDate() into mCurrentTime
+  redraw all
+end handler
+
+--
+handler getTimeZone() returns Number
+  if mTimeZone is not nothing then
+    return mTimeZone
+  else
+    return hhLocalOffset()
+  end if
+end handler
+
+--
+handler hhStringToColor(in pString as String) returns Color
+  if the number of chars in pString is 0 then
+     return color [0.0, 0.0, 0.0, 1.0]
+  end if
+  variable tList as List
+  split pString by "," into tList
+  variable tNum as Number
+  put the number of elements in tList into tNum
+  variable tR as Number
+  variable tG as Number
+  variable tB as Number
+  variable tA as Number
+  put ((element 1 of tList) parsed as number) into tR
+  put ((element 2 of tList) parsed as number) into tG
+  put ((element 3 of tList) parsed as number) into tB
+  if tNum = 4 then -- put first tA in range 0-1
+    put ((element 4 of tList) parsed as number) into tA
+    if not ("." is in pString) then
+      put tA/255 into tA
+    end if
+  else
+    put 1.0 into tA
+  end if
+  if "." is in pString then
+    return color [tR, tG, tB, tA]
+  else
+    return color [tR/255, tG/255, tB/255, tA]
+  end if
+end handler
+
+-- Returns the color as a four-item string
+handler hhColorToString(in pColor as Color) returns String
+  variable tString as String
+  if pColor is nothing then
+    return "0,0,0,255"
+  end if
+  put (the trunc of ((the red of pColor) * 255)) formatted as string into tString
+  put "," & (the trunc of ((the green of pColor) * 255)) formatted as string after tString
+  put "," & (the trunc of ((the blue of pColor) * 255)) formatted as string after tString
+  put "," & (the trunc of ((the alpha of pColor) * 255)) formatted as string after tString
+  return tString
+end handler
+
+-- pLeadNum, pDecNum is the same as the number format "pLeadNum zeros . pDecNum zeros"
+handler hhNumberToString(in pNum as Number,in pLeadNum as Number, in pDecNum as Number) returns String
+  variable tS as String
+  variable tN as Number
+  variable tC as Number
+  put the empty string into tS
+  if pNum < 0 then
+    put "-" into tS
+    multiply pNum by -1
+  end if
+  put the trunc of pNum into tN -- integer part
+  if tN = 0 then
+    repeat pLeadNum times
+      put "0" after tS
+    end repeat
+  else
+    repeat with tC from \
+        the maximum of pLeadNum-1 and (the trunc of the log of tN) down to 0
+      put the trunc of (tN/10^tC) formatted as string after tS
+      put tN mod 10^tC into tN
+    end repeat
+  end if
+  if pDecNum > 0 then -- fractional part
+    put "." after tS
+    put the rounded of (10^pDecNum*(pNum mod 1)) into tN
+    repeat with tC from pDecNum-1 down to 0
+      put the trunc of (tN/10^tC) formatted as string after tS
+      put tN mod 10^tC into tN
+    end repeat
+  end if
+  return tS
+end handler
+
+end widget

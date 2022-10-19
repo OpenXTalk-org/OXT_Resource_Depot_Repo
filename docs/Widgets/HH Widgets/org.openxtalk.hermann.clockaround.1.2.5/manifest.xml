@@ -1,0 +1,117 @@
+<package version="0.0">
+  <name>org.openxtalk.hermann.clockaround</name>
+  <title>hhAClox</title>
+  <author>Hermann Hoch</author>
+  <version>1.2.5</version>
+  <license>community</license>
+  <type>widget</type>
+  <requires name="com.livecode.canvas"/>
+  <requires name="com.livecode.engine"/>
+  <requires name="com.livecode.math"/>
+  <requires name="com.livecode.widget"/>
+  <requires name="com.livecode.arithmetic"/>
+  <requires name="com.livecode.binary"/>
+  <requires name="com.livecode.list"/>
+  <requires name="com.livecode.logic"/>
+  <requires name="com.livecode.string"/>
+  <requires name="com.livecode.type"/>
+  <requires name="com.livecode.typeconvert"/>
+  <requires name="com.livecode.char"/>
+  <requires name="com.livecode.array"/>
+  <requires name="com.livecode.byte"/>
+  <requires name="com.livecode.date"/>
+  <requires name="com.livecode.mathfoundation"/>
+  <metadata key="preferredSize">128,128</metadata>
+  <metadata key="svgicon">M0 63.5 C 0 127,0 127,140.5 127 C 281 127,281 127,281 63.5 C 281 0,281 0,140.5 0 C 0 0,0 0,0 63.5 M154.719 63.250 C 154.938 98,154.938 98,146.969 98 C 139 98,139 98,139 63.667 C 139 44.783,139.318 29.015,139.706 28.627 C 140.095 28.239,143.582 28.051,147.456 28.210 C 154.5 28.5,154.5 28.5,154.719 63.250 M65.032 64 C 72.055 80.225,77.491 93.832,77.113 94.237 C 76.384 95.019,61.782 100.170,61.491 99.748 C 61.397 99.612,59.720 95.450,57.763 90.5 C 54.207 81.5,54.207 81.5,43.012 81.5 C 31.817 81.5,31.817 81.5,28.204 90.5 C 26.217 95.450,24.534 99.612,24.465 99.748 C 24.307 100.055,9.826 95.159,9.282 94.615 C 9.066 94.399,14.148 82.134,20.576 67.361 C 27.003 52.587,32.892 39.020,33.661 37.211 C 35.059 33.923,35.059 33.923,43.661 34.211 C 52.264 34.5,52.264 34.5,65.032 64 M128.327 34.750 C 128.572 35.163,129.085 38.247,129.467 41.604 C 130.162 47.707,130.162 47.707,123.331 48.375 C 112.733 49.410,106.224 51.819,101.313 56.524 C 97.202 60.464,97 60.928,97 66.446 C 97 71.806,97.278 72.512,100.750 75.964 C 105.441 80.629,113.491 83.689,123.442 84.591 C 131.080 85.283,131.080 85.283,130.485 89.892 C 129.166 100.121,130.093 99.362,119.695 98.715 C 99.026 97.427,84.607 88.679,80.034 74.651 C 78.377 69.568,79.125 59.510,81.533 54.5 C 85.606 46.024,96.302 38.576,108.721 35.567 C 114.961 34.055,127.602 33.528,128.327 34.750 M203.436 51.410 C 215.386 58.413,219.353 74.231,212.375 87.053 C 206.402 98.027,191.143 102.751,178.5 97.540 C 169.551 93.851,164.026 84.767,164.010 73.718 C 163.998 65.830,165.769 60.889,170.301 56.165 C 176.246 49.967,181.812 47.934,191.644 48.370 C 197.243 48.618,199.794 49.275,203.436 51.410 M239.5 56.044 C 242.250 60.419,244.794 63.998,245.154 63.999 C 245.513 64,248.134 60.373,250.977 55.941 C 253.879 51.418,256.663 48.097,257.323 48.372 C 257.970 48.642,260.863 49.650,263.750 50.614 C 266.637 51.577,269 52.750,269 53.221 C 269 53.692,266.265 58.144,262.923 63.115 C 259.580 68.086,257.059 72.712,257.321 73.394 C 257.583 74.077,260.543 78.816,263.899 83.927 C 269.377 92.270,270.787 95,269.619 95 C 269.410 95,266.305 96.104,262.720 97.454 C 256.201 99.907,256.201 99.907,250.525 90.954 C 247.403 86.029,244.715 82,244.551 82 C 244.386 82,241.860 85.713,238.936 90.250 C 236.012 94.787,233.347 98.836,233.014 99.246 C 232.235 100.205,220.763 95.789,220.282 94.345 C 220.081 93.744,222.898 88.887,226.541 83.551 C 233.165 73.850,233.165 73.850,227.144 64.675 C 223.832 59.629,220.982 54.898,220.811 54.162 C 220.540 52.996,230.287 48.387,233.5 48.161 C 234.050 48.123,236.750 51.670,239.5 56.044 M38.701 60.750 C 35.193 69.5,35.193 69.5,39.097 69.807 C 41.244 69.977,44.762 69.977,46.915 69.807 C 50.830 69.5,50.830 69.5,47.243 60.750 C 45.269 55.938,43.330 52,42.932 52 C 42.535 52,40.631 55.938,38.701 60.750 M184.655 61.133 C 182.241 62.536,179.050 69.648,179.022 73.685 C 178.954 83.586,186.748 90.250,194.006 86.497 C 201.517 82.613,202.079 66.671,194.883 61.631 C 192.239 59.779,187.391 59.543,184.655 61.133Z</metadata>
+  <handler name="OnMouseDown" parameters="" return="any"/>
+  <handler name="OnMouseUp" parameters="" return="any"/>
+  <handler name="OnEnter" parameters="" return="any"/>
+  <handler name="OnLeave" parameters="" return="any"/>
+  <handler name="OnCreate" parameters="" return="any"/>
+  <handler name="OnOpen" parameters="" return="any"/>
+  <handler name="OnPaint" parameters="" return="any"/>
+  <handler name="OnTimer" parameters="" return="any"/>
+  <handler name="OnSave" parameters="out array" return="any"/>
+  <handler name="OnLoad" parameters="in array" return="any"/>
+  <handler name="OnGeometryChanged" parameters="" return="nothing"/>
+  <property name="widgetVersion" get="string"/>
+  <property name="fengShuiColoring" get="string"/>
+  <metadata key="fengShuiColoring.section">Contents</metadata>
+  <property name="useFengShuiColoring" get="boolean" set="boolean"/>
+  <metadata key="useFengShuiColoring.section">Colors</metadata>
+  <property name="useFengShuiColoring2" get="boolean" set="boolean"/>
+  <metadata key="useFengShuiColoring2.section">Contents</metadata>
+  <property name="centerColor" get="string" set="string"/>
+  <metadata key="centerColor.section">Colors</metadata>
+  <metadata key="centerColor.editor">com.livecode.pi.colorwithalpha</metadata>
+  <property name="digitBackColor" get="string" set="string"/>
+  <metadata key="digitBackColor.section">Colors</metadata>
+  <metadata key="digitBackColor.editor">com.livecode.pi.colorwithalpha</metadata>
+  <property name="digitColor" get="string" set="string"/>
+  <metadata key="digitColor.section">Colors</metadata>
+  <metadata key="digitColor.editor">com.livecode.pi.colorwithalpha</metadata>
+  <property name="faceColor" get="string" set="string"/>
+  <metadata key="faceColor.section">Colors</metadata>
+  <metadata key="faceColor.editor">com.livecode.pi.colorwithalpha</metadata>
+  <property name="hoursColor" get="string" set="string"/>
+  <metadata key="hoursColor.section">Colors</metadata>
+  <metadata key="hoursColor.editor">com.livecode.pi.colorwithalpha</metadata>
+  <property name="minutesColor" get="string" set="string"/>
+  <metadata key="minutesColor.section">Colors</metadata>
+  <metadata key="minutesColor.editor">com.livecode.pi.colorwithalpha</metadata>
+  <property name="secondsColor" get="string" set="string"/>
+  <metadata key="secondsColor.section">Colors</metadata>
+  <metadata key="secondsColor.editor">com.livecode.pi.colorwithalpha</metadata>
+  <property name="ticksColor" get="string" set="string"/>
+  <metadata key="ticksColor.section">Colors</metadata>
+  <metadata key="ticksColor.editor">com.livecode.pi.colorwithalpha</metadata>
+  <property name="timeZone" get="number" set="optional number"/>
+  <metadata key="timeZone.editor">com.livecode.pi.timezone</metadata>
+  <metadata key="timeZone.label">Timezone</metadata>
+  <metadata key="timeZone.default"></metadata>
+  <property name="clockRadius" get="number" set="number"/>
+  <metadata key="clockRadius.editor">com.livecode.pi.number</metadata>
+  <metadata key="clockRadius.min">32</metadata>
+  <metadata key="clockRadius.step">1</metadata>
+  <property name="hoursArc" get="boolean" set="boolean"/>
+  <metadata key="hoursArc.editor">com.livecode.pi.boolean</metadata>
+  <property name="minutesArc" get="boolean" set="boolean"/>
+  <metadata key="minutesArc.editor">com.livecode.pi.boolean</metadata>
+  <property name="secondsArc" get="boolean" set="boolean"/>
+  <metadata key="secondsArc.editor">com.livecode.pi.boolean</metadata>
+  <property name="hoursDot" get="boolean" set="boolean"/>
+  <metadata key="hoursDot.editor">com.livecode.pi.boolean</metadata>
+  <property name="minutesDot" get="boolean" set="boolean"/>
+  <metadata key="minutesDot.editor">com.livecode.pi.boolean</metadata>
+  <property name="secondsDot" get="boolean" set="boolean"/>
+  <metadata key="secondsDot.editor">com.livecode.pi.boolean</metadata>
+  <property name="hoursHand" get="boolean" set="boolean"/>
+  <metadata key="hoursHand.editor">com.livecode.pi.boolean</metadata>
+  <property name="minutesHand" get="boolean" set="boolean"/>
+  <metadata key="minutesHand.editor">com.livecode.pi.boolean</metadata>
+  <property name="secondsHand" get="boolean" set="boolean"/>
+  <metadata key="secondsHand.editor">com.livecode.pi.boolean</metadata>
+  <property name="showTicks" get="boolean" set="boolean"/>
+  <metadata key="showTicks.editor">com.livecode.pi.boolean</metadata>
+  <property name="showOrigin24or12" get="boolean" set="boolean"/>
+  <metadata key="showOrigin24or12.editor">com.livecode.pi.boolean</metadata>
+  <property name="is24HoursDisplay" get="boolean" set="boolean"/>
+  <metadata key="is24HoursDisplay.editor">com.livecode.pi.boolean</metadata>
+  <property name="allowContextMenu" get="boolean" set="boolean"/>
+  <metadata key="allowContextMenu.editor">com.livecode.pi.boolean</metadata>
+  <property name="allowGrab" get="boolean" set="boolean"/>
+  <metadata key="allowGrab.editor">com.livecode.pi.boolean</metadata>
+  <property name="digitSize" get="number" set="number"/>
+  <metadata key="digitSize.editor">com.livecode.pi.number</metadata>
+  <metadata key="digitSize.min">10</metadata>
+  <metadata key="digitSize.step">1</metadata>
+  <metadata key="digitSize.section">Text</metadata>
+  <property name="autoDigitSize" get="boolean" set="boolean"/>
+  <metadata key="autoDigitSize.editor">com.livecode.pi.boolean</metadata>
+  <metadata key="autoDigitSize.section">Text</metadata>
+  <property name="showDigital" get="boolean" set="boolean"/>
+  <metadata key="showDigital.editor">com.livecode.pi.boolean</metadata>
+  <metadata key="showDigital.section">Text</metadata>
+  <property name="textSize" get="string" set="string"/>
+  <metadata key="textSize.user_visible">false</metadata>
+</package>

@@ -1,0 +1,1581 @@
+/**
+BaseClock v105 [-hh fecit, Oct 2018]
+
+Widget 'BaseClock' displays a digital clock to number bases from 2 up to 60.
+Coloring: The clock has an optional FengShui-colored frame and text.
+If used, the color is set depending on the time, see the (read only) property fengShuiColoring.
+The current setting is:
+_[from 05:00 to 10:00 color "morning green" = "0,204,153"]_,
+_[from 10:00 to 12:00 color "forenoon red" = "255,102,0"]_,
+_[from 12:00 to 15:00 color "noon yellow" = "255,204,102"]_,
+_[from 15:00 to 17:00 color "afternoon white" = "255,255,255"]_,
+_[from 17:00 to 22:00 color "evening light blue" = "102,102,255"]_,
+_[from 22:00 to 05:00 color "night blue" = "0,0,255"]_.
+The time may be chosen as local or with any offset to universal time (UTC).
+This "timezone" uses in the property inspector only the built-in LC editor.
+Full hour values are also available by RightClicking the widget.
+The offset may be set to any amount of seconds in the range -12*3600 to 12*3600.
+
+To have a start/stop of the baseClock's timer write
+++ do "startClock" in [widget]
+++ do "stopClock" in [widget]
+
+ALWAYS RECALL THAT ALL TIMERS are STOPPED IN POINTER MODE.
+
+Available properties which are gettable/settable (see dictionary):
+
+Tab Basic.
+allowContextMenu, allowGrab, timeZone, showDigitBase, digitBase, digitScaleX, syncScales, digitScaleY, autoSize, strokeWidth.
+
+Tab Colors.
+useContrastFill, fillColor, strokeColor, timeColor, useTimeColor, useFengShuiColors.
+
+Moreover you may use
+do "startClock" in [widget],
+do "stopClock" in [widget].
+
+
+The widget passes the following messages to LC Script (you can use them in your widget's script):
+mouseDown (late), mouseEnter, mouseLeave, mouseUp.
+**/
+
+widget org.openxtalk.hermann.baseclock
+
+use com.livecode.canvas
+use com.livecode.widget
+use com.livecode.engine
+use com.livecode.math
+
+constant kWidgetVersion is "hhBaseClock_v105 [fat widget]"
+metadata title is "hhBClox"
+metadata author is "Hermann Hoch"
+metadata version is "1.0.5"
+metadata preferredSize is "240,36"
+metadata svgicon is "M0 63.5 C 0 127,0 127,140 127 C 280 127,280 127,280 63.5 C 280 0,280 0,140 0 C 0 0,0 0,0 63.5 M153.719 63.250 C 153.938 98,153.938 98,145.969 98 C 138 98,138 98,138 63.667 C 138 44.783,138.318 29.015,138.706 28.627 C 139.095 28.239,142.582 28.051,146.456 28.210 C 153.5 28.5,153.5 28.5,153.719 63.250 M51.629 35.326 C 58.859 36.842,62.381 38.936,65.044 43.304 C 68.506 48.982,67.210 55.679,61.644 60.878 C 59.098 63.257,59.098 63.257,63.291 65.378 C 76.772 72.2,74.214 90.111,58.986 95.514 C 53.007 97.635,35.372 99.140,25.750 98.349 C 18 97.712,18 97.712,18 65.856 C 18 34,18 34,31.750 34.021 C 39.313 34.032,48.258 34.620,51.629 35.326 M127.327 34.750 C 127.572 35.163,128.085 38.247,128.467 41.604 C 129.162 47.707,129.162 47.707,122.331 48.375 C 111.733 49.410,105.224 51.819,100.313 56.524 C 96.202 60.464,96 60.928,96 66.446 C 96 71.806,96.278 72.512,99.750 75.964 C 104.441 80.629,112.491 83.689,122.442 84.591 C 130.080 85.283,130.080 85.283,129.485 89.892 C 128.166 100.121,129.093 99.362,118.695 98.715 C 98.026 97.427,83.607 88.679,79.034 74.651 C 77.377 69.568,78.125 59.510,80.533 54.5 C 84.606 46.024,95.302 38.576,107.721 35.567 C 113.961 34.055,126.602 33.528,127.327 34.750 M34 65.477 C 34 86.212,34 86.212,42.097 85.844 C 49.5 85.508,50.399 85.237,52.597 82.682 C 55.626 79.161,55.649 75.866,52.669 72.402 C 50.780 70.205,49.267 69.604,44.669 69.222 C 41.424 68.953,38.994 68.271,38.986 67.626 C 38.979 67.007,38.709 65.516,38.386 64.314 C 37.888 62.457,38.304 62.033,41.150 61.493 C 46.983 60.387,50.703 55.937,49.569 51.420 C 48.747 48.144,45.481 46.248,39.250 45.431 C 34 44.742,34 44.742,34 65.477 M202.436 51.410 C 214.386 58.413,218.353 74.231,211.375 87.053 C 205.402 98.027,190.143 102.751,177.5 97.540 C 168.551 93.851,163.026 84.767,163.010 73.718 C 162.998 65.830,164.769 60.889,169.301 56.165 C 175.246 49.967,180.812 47.934,190.644 48.370 C 196.243 48.618,198.794 49.275,202.436 51.410 M238.5 56.044 C 241.250 60.419,243.794 63.998,244.154 63.999 C 244.513 64,247.134 60.373,249.977 55.941 C 252.879 51.418,255.663 48.097,256.323 48.372 C 256.970 48.642,259.863 49.650,262.750 50.614 C 265.637 51.577,268 52.750,268 53.221 C 268 53.692,265.265 58.144,261.923 63.115 C 258.580 68.086,256.059 72.712,256.321 73.394 C 256.583 74.077,259.543 78.816,262.899 83.927 C 268.377 92.270,269.787 95,268.619 95 C 268.410 95,265.305 96.104,261.720 97.454 C 255.201 99.907,255.201 99.907,249.525 90.954 C 246.403 86.029,243.715 82,243.551 82 C 243.386 82,240.860 85.713,237.936 90.250 C 235.012 94.787,232.347 98.836,232.014 99.246 C 231.235 100.205,219.763 95.789,219.282 94.345 C 219.081 93.744,221.898 88.887,225.541 83.551 C 232.165 73.850,232.165 73.850,226.144 64.675 C 222.832 59.629,219.982 54.898,219.811 54.162 C 219.540 52.996,229.287 48.387,232.5 48.161 C 233.050 48.123,235.750 51.670,238.5 56.044 M183.655 61.133 C 181.241 62.536,178.050 69.648,178.022 73.685 C 177.954 83.586,185.748 90.250,193.006 86.497 C 200.517 82.613,201.079 66.671,193.883 61.631 C 191.239 59.779,186.391 59.543,183.655 61.133Z"
+
+constant kSegments is [ \
+			"M0,48 L0,0 L30,0 L30,48 L0,48", \
+			"M15,0 L15,48 M0,0 L30,0 M30,48 L0,48", \
+			"M0,0 L30,0 L30,24 L0,24 L0,48 L30,48", \
+			"M0,0 L30,0 L30,48 L0,48 M30,24 L0,24", \
+			"M0,0 L0,24 L30,24 M30,0 L30,48", \
+			"M30,0 L0,0 L0,24 L30,24 L30,48 L0,48", \
+			"M30,0 L0,0 L0,48 L30,48 L30,24 L0,24", \
+			"M0,0 L30,0 L30,48", \
+			"M30,24 L0,24 L0,0 L30,0 L30,48 L0,48 L0,24", \
+			"M30,24 L0,24 L0,0 L30,0 L30,48 L0,48" ]
+constant kSegments2 is [ \
+			"M0,120 L0,72 L30,72 L30,120 L0,120", \
+			"M15,72 L15,120 M0,72 L30,72 M30,120 L0,120", \
+			"M0,72 L30,72 L30,96 L0,96 L0,120 L30,120", \
+			"M0,72 L30,72 L30,120 L0,120 M30,96 L0,96", \
+			"M0,72 L0,96 L30,96 M30,72 L30,120", \
+			"M30,72 L0,72 L0,96 L30,96 L30,120 L0,120", \
+			"M30,72 L0,72 L0,120 L30,120 L30,96 L0,96", \
+			"M0,72 L30,72 L30,120", \
+			"M30,96 L0,96 L0,72 L30,72 L30,120 L0,120 L0,96", \
+			"M30,96 L0,96 L0,72 L30,72 L30,120 L0,120" ]
+
+--mark VARIABLES
+
+variable mAllowContextMenu as Boolean
+variable mAllowGrab as Boolean
+variable mAutoSize as String
+variable mAutoHeight as Number
+variable mAutoWidth as Number
+variable mBaseHeight as Number
+variable mBaseWidth as Number
+variable mBounds as Rectangle
+variable mContrastStrokeColor as Color
+variable mContrastTimeColor as Color
+variable mContrastFSColor as Color
+variable mDigitBase as Number
+variable mDigitScaleX as Number
+variable mDigitScaleY as Number
+variable mContrastFillColor as Color
+variable mCountTarget as String
+variable mCurrentDate as String
+variable mCurrentTime as List
+variable mDown as Boolean
+variable mE as ScriptObject
+variable mFillColor as Color
+variable mFSColor as Color
+variable mGrab as Boolean
+variable mLocalOffset as Number
+variable mMouse as Point
+variable mNothing as String
+variable mOldHour as Number
+variable mPath as Path
+variable mPathList as List
+variable mPlatform as String
+variable mRadius as Number
+variable mShowDigitBase as Boolean
+variable mStrokeColor as Color
+variable mStrokeWidth as Number
+variable mSyncScales as Boolean
+variable mTime as Number
+variable mTimeColor as Color
+variable mTimeZone as optional Number
+variable mTimeZoneMenuOnly as Boolean
+variable mUseContrastFill as Boolean
+variable mUseFengShuiColors as Boolean
+variable mUseShadow as Boolean
+variable mUseTimeColor as Boolean
+variable mWidgetVersion as String
+
+--
+public handler OnCreate()
+	put kWidgetVersion into mWidgetVersion
+	put my width into mAutoWidth
+	put my height into mAutoHeight
+	put 90 into mBaseHeight
+	put 592 into mBaseWidth
+	put my bounds into mBounds
+	put [0,0,0,0,0,0,0] into mCurrentTime
+	put false into mDown
+	put my script object into mE
+	put false into mGrab
+	put the empty path into mPath
+	put [0,0,0,0] into mPathList
+	put "" into mNothing
+	put -1 into mOldHour
+	-- properties
+	put nothing into mTimeZone --> local time
+	put true  into mAllowContextMenu
+	put false into mAllowGrab
+	put "Fit" into mAutoSize
+	put 2 into mDigitBase
+	put 0.5 into mDigitScaleX
+	put 0.5 into mDigitScaleY
+	put 5 into mStrokeWidth
+	put true  into mShowDigitBase
+	put true  into mSyncScales
+	put false into mTimeZoneMenuOnly
+	put true  into mUseContrastFill
+	put false into mUseTimeColor
+	put true	 into mUseFengShuiColors
+	put color [0.62,0.62,0.62] into mFillColor
+	put color [1.0,0.0,0.0] into mStrokeColor
+	put color [0.0,0.0,0.0] into mTimeColor
+	put color [0,0,0] into mContrastFSColor
+	put color [0,0,0] into mContrastStrokeColor
+	put color [0,0,0] into mContrastTimeColor
+end handler
+
+--
+public handler OnPaint()
+	variable tFillColor as Color
+	variable tPath as Path
+	variable tI as Number
+	variable tJ as Number
+	variable tL as List
+	variable tR as Rectangle
+	variable tS as String
+	transform this canvas by transform with matrix \
+			[mDigitScaleX, 0, 0, mDigitScaleY, my width/2, my height/2]
+	put (48+the width of mBounds)/2 into mRadius
+--mark paint frame
+	put rounded rectangle path of rectangle \
+		[-mRadius+0.5*mStrokeWidth, -42+0.5*mStrokeWidth, \
+		  mRadius-0.5*mStrokeWidth,  42-0.5*mStrokeWidth] \
+			with radius 16 into tPath
+	if mUseContrastFill then
+		if mUseTimeColor then
+			set the paint of this canvas to solid paint with mContrastTimeColor
+		else if mUseFengShuiColors then
+			set the paint of this canvas to solid paint with mContrastFSColor
+		else
+			set the paint of this canvas to solid paint with mContrastStrokeColor
+		end if
+	else
+		set the paint of this canvas to solid paint with mFillColor
+	end if
+	fill tPath on this canvas
+	if mUseFengShuiColors then
+		set the paint of this canvas to solid paint with mFSColor
+	else
+		set the paint of this canvas to solid paint with mStrokeColor
+	end if
+	set the stroke width of this canvas to mStrokeWidth
+	stroke tPath  on this canvas
+--mark paint drawTime
+	set the join style of this canvas to "round"
+	set the cap style  of this canvas to "round"
+	if mUseTimeColor then
+		set the paint of this canvas to solid paint with mTimeColor
+	end if
+	stroke mPath on this canvas --> mPath is set in drawTime()
+	-- is in average < 3 millisecs with mTime from timer:
+	-- log (the universal time - mTime)
+end handler
+
+--
+public handler OnMouseDown()
+	variable tRightClick as Boolean
+	put true into mDown
+	put false into mGrab
+	put the click position into mMouse
+	put the click button is 3 into tRightClick
+	if mAllowContextMenu and tRightClick then
+		variable tOffset as Number
+		variable tCurrent as Number
+		put (mLocalOffset/3600) into tOffset
+		if mTimeZone is nothing then
+			put tOffset into tCurrent
+		else
+			put (mTimeZone/3600) into tCurrent
+		end if
+		variable tC as Number
+		variable tString as String
+		variable tMenu as String
+		variable tMenuL as List
+		put the empty list into tMenuL
+		if not mTimeZoneMenuOnly then
+			push "Start Clock" onto tMenuL
+			push "Stop Clock" onto tMenuL
+			push "-" onto tMenuL
+			if mShowDigitBase then
+				push "Hide Base" onto tMenuL
+			else
+				push "Show Base" onto tMenuL
+			end if
+			if mAllowGrab then
+				push "Disallow Grab" onto tMenuL
+			else
+				push "Allow Grab" onto tMenuL
+			end if
+			push "-" onto tMenuL
+		end if
+		repeat with tC from -12 up to 12
+			if tC < 0 then
+				put "UTC " & (tC formatted as string) & " h" into tString
+			else if tC > 0 then
+				put "UTC +" & (tC formatted as string) & " h" into tString
+			else
+				put "UTC " & (tC formatted as string) & " h" into tString
+			end if
+			if tC = tOffset then
+				put " = local" after tString
+			end if
+			if tC = tCurrent then
+				put " = current" after tString
+			end if
+			push tString onto tMenuL
+		end repeat
+		combine tMenuL with newline into tMenu
+		popup menu tMenu at the mouse position
+		if the result is not nothing then
+			variable tStringL as List
+			split the result by " " into tStringL
+			if tStringL[1] is "Start" then
+				cancel timer
+				schedule timer in 1- (the universal time mod 1) seconds
+			else if tStringL[1] is "Stop" then
+				cancel timer
+			else if tStringL[1] is in ["Show","Hide"] then
+				put not mShowDigitBase into mShowDigitBase
+			else if tStringL[1] is in ["Allow","Disallow"] then
+				put not mAllowGrab into mAllowGrab
+			else
+				put 3600*(tStringL[2] parsed as number) into mTimeZone
+				put hhSecondsToDate() into mCurrentTime
+			end if
+			redraw all
+		end if
+	else if mAllowGrab and ( (the x of mMouse < 12) or (the x of mMouse - my width  > -12) \
+			 or (the y of mMouse < 12) or (the y of mMouse - my height > -12) ) then
+		put true into mGrab
+		schedule timer in 0.032 seconds
+	else if not tRightClick and point [ (the x of mMouse - my width/2)/mDigitScaleX, \
+						 (the y of mMouse - my height/2)/mDigitScaleY ] is within mBounds then
+		if the y of mMouse < my height/2 then
+			add 1 to mDigitBase
+		else
+			subtract 1 from mDigitBase
+		end if
+		setBase(mDigitBase)
+	else
+		send "mouseDown" to mE with [the click button]
+	end if
+end handler
+
+--
+public handler OnOpen()
+	execute script "return (the platform is quote&win32&quote)"
+	if the result then
+	 put "Win32" into mPlatform
+	else
+	 put "MacOS or Linux" into mPlatform
+	end if
+	drawTime()
+	setRect()
+	schedule timer in 0.01 seconds
+end handler
+
+--
+public handler OnClose()
+  cancel timer
+end handler
+
+--
+public handler OnDo(in pScript as String)
+ 	if the lower of pScript begins with "start" then
+ 		cancel timer
+ 		schedule timer in 1 - (the universal time mod 1) seconds
+ 	else if the lower of pScript begins with "stop" then
+  		cancel timer
+	end if
+end handler
+
+--
+public handler OnTimer()
+	if mGrab and mAllowGrab then --> GRAB
+		variable tMouse as Point
+		put the mouse position into tMouse
+		variable tRect as Rectangle
+		put my rectangle into tRect
+		set property "left" of mE to \
+			(the left of tRect + the x of tMouse - the x of mMouse)
+		set property "top"  of mE to \
+			(the top  of tRect + the y of tMouse - the y of mMouse)
+		redraw all
+		schedule timer in 0.032 seconds
+	else
+		put the universal time into mTime --> timing end in OnPaint()
+		drawTime()
+  		schedule timer in 1 - (mTime mod 1) seconds
+ 	end if
+	redraw all
+end handler
+
+--
+public handler OnGeometryChanged() returns nothing
+	if in edit mode then
+		if mAutoSize is "Width" then
+			put mDigitScaleX into mDigitScaleX
+			put the minimum of 4 and (the maximum of 0.3 and (my height/mBaseHeight)) into mDigitScaleY
+		else if mAutoSize is "Height" then
+			put mDigitScaleY into mDigitScaleY
+			put the minimum of 4 and (the maximum of 0.3 and (my width/mBaseWidth)) into mDigitScaleX
+		else
+			put the minimum of 4 and (the maximum of 0.3 and (my width/mBaseWidth)) into mDigitScaleX
+			if mSyncScales then
+				put mDigitScaleX into mDigitScaleY
+			else
+				put the minimum of 4 and \
+					(the maximum of 0.3 and (my height/mBaseHeight)) into mDigitScaleY
+			end if
+		end if
+		redraw all
+	end if
+end handler
+
+--
+public handler OnSave(out rProp as Array)
+  	put the empty array into rProp
+	put hhColorToString(mFillColor) into rProp["fillColor"]
+	put hhColorToString(mStrokeColor) into rProp["strokeColor"]
+	put hhColorToString(mTimeColor) into rProp["timeColor"]
+	put mAllowContextMenu into rProp["allowContextMenu"]
+	put mAllowGrab into rProp["allowGrab"]
+	put mAutoSize into rProp["autoSize"]
+	put mDigitBase into rProp["digitBase"]
+	put mDigitScaleX into rProp["digitScaleX"]
+	put mDigitScaleY into rProp["digitScaleY"]
+	put mShowDigitBase into rProp["showDigitBase"]
+	put mStrokeWidth into rProp["strokeWidth"]
+	put mSyncScales into rProp["syncScales"]
+	put mTimeZone into rProp["timeZone"]
+	put mTimeZoneMenuOnly into rProp["timeZoneMenuOnly"]
+	put mUseTimeColor into rProp["useTimeColor"]
+	put mUseFengShuiColors into rProp["useFengShuiColors"]
+end handler
+
+--
+public handler OnLoad(in rProp as Array)
+	put kWidgetVersion into mWidgetVersion
+	put my script object into mE
+	if "fillColor" is not among the keys of rProp then
+		setFillColor("0.8, 0.8, 0.8")
+	else
+		setFillColor(rProp["fillColor"])
+	end if
+	if "strokeColor" is not among the keys of rProp then
+		setStrokeColor("1.0, 0.0, 0.0")
+	else
+		setStrokeColor(rProp["strokeColor"])
+	end if
+	if "timeColor" is not among the keys of rProp then
+		setTimeColor("0.0, 0.0, 1.0")
+	else
+		setTimeColor(rProp["timeColor"])
+	end if
+	if "allowContextMenu" is not among the keys of rProp then
+		put false into mAllowContextMenu
+	else
+		put rProp["allowContextMenu"] into mAllowContextMenu
+	end if
+	if "allowGrab" is not among the keys of rProp then
+		put false into mAllowGrab
+	else
+		put rProp["allowGrab"] into mAllowGrab
+	end if
+	if "autoSize" is not among the keys of rProp then
+		put "Fit" into mAutoSize
+	else
+		put rProp["autoSize"] into mAutoSize
+	end if
+	if "digitBase" is not among the keys of rProp then
+		put 2 into mDigitBase
+	else
+		put rProp["digitBase"] into mDigitBase
+	end if
+	if "digitScaleX" is not among the keys of rProp then
+		put 0.8 into mDigitScaleX
+	else
+		put rProp["digitScaleX"] into mDigitScaleX
+	end if
+	if "digitScaleY" is not among the keys of rProp then
+		put 0.8 into mDigitScaleY
+	else
+		put rProp["digitScaleY"] into mDigitScaleY
+	end if
+	if "showDigitBase" is not among the keys of rProp then
+		put true into mShowDigitBase
+	else
+		put rProp["showDigitBase"] into mShowDigitBase
+	end if
+	if "strokeWidth" is not among the keys of rProp then
+		put 2 into mStrokeWidth
+	else
+		put rProp["strokeWidth"] into mStrokeWidth
+	end if
+	if "syncScales" is not among the keys of rProp then
+		put false into mSyncScales
+	else
+		put rProp["syncScales"] into mSyncScales
+	end if
+	if "timeZone" is not among the keys of rProp then
+		put nothing into mTimeZone -- local time
+	else
+		put rProp["timeZone"] into mTimeZone
+	end if
+	if "timeZoneMenuOnly" is not among the keys of rProp then
+		put false into mTimeZoneMenuOnly
+	else
+		put rProp["timeZoneMenuOnly"] into mTimeZoneMenuOnly
+	end if
+	if "useFengShuiColors" is not among the keys of rProp then
+		put true into mUseFengShuiColors
+	else
+		put rProp["useFengShuiColors"] into mUseFengShuiColors
+	end if
+	if "useTimeColor" is not among the keys of rProp then
+		put true into mUseTimeColor
+	else
+		put rProp["useTimeColor"] into mUseTimeColor
+	end if
+end handler
+
+--
+public handler OnMouseUp()
+	put false into mGrab
+	put false into mDown
+	send "mouseUp" to mE with [the click button]
+end handler
+
+--
+public handler OnMouseRelease()
+	put false into mGrab
+	put false into mDown
+	send "mouseRelease" to mE with [the click button]
+end handler
+
+--
+public handler OnMouseEnter()
+	send "mouseEnter" to mE
+end handler
+
+--
+public handler OnMouseLeave()
+	send "mouseLeave" to mE
+end handler
+
+--mark hh-HELPER
+
+--
+handler setRect() returns nothing
+	variable tH as String
+	variable tW as String
+	if mAutoSize is "Height" then
+		put mAutoWidth/(48+the width of mBounds) into mDigitScaleX
+		put mDigitScaleX into mDigitScaleY
+		put mAutoWidth formatted as string into tW
+		put (84*mDigitScaleY) formatted as string into tH
+	else if mAutoSize is "Width" then
+		put mAutoHeight/84 into mDigitScaleY
+		put mDigitScaleY into mDigitScaleX
+		put ((48+the width of mBounds)*mDigitScaleX) formatted as string into tW
+		put mAutoHeight formatted as string into tH
+	else -- "Fit"
+		put ((48+the width of mBounds)*mDigitScaleX) formatted as string into tW
+		put (84*mDigitScaleY) formatted as string into tH
+	end if
+	post  "put the topleft of me into tL; lock screen; lock messages; " & \
+			"set rect of me to (item 1 of tL, item 2 of tL," & \
+			"item 1 of tL + " & tW & ",item 2 of tL + " & tH & "); " to mE
+end handler
+
+--
+handler getFSColor(in pN as Number) returns Color
+	variable hColor as String
+	if pN < 5 then
+		put "0,0,255" into hColor		-- night blue
+	else if pN < 10 then
+		put "0,204,153" into hColor	-- morning green
+	else if pN < 12  then
+		put "255,102,0" into hColor	-- forenoon red
+	else if pN < 15  then
+		put "255,204,102" into hColor	-- noon yellow
+	else if pN < 17  then
+		put "255,255,255" into hColor	-- afternoon white
+	else if pN < 22  then
+		put "102,102,255" into hColor	-- evening light blue
+	else
+		put "0,0,255" into hColor		-- night blue
+	end if
+ 	return hhStringToColor(hColor)
+end handler
+--
+handler getFengShuiColoring() returns String
+	return "" & \
+		"-- stopHour, name, colorRed, colorGreen, colorBlue" & newline & \
+		"5,night blue,0,0,255" & newline & \
+		"10,morning green,0,204,153" & newline & \
+		"12,forenoon red,255,102,0" & newline & \
+		"15,noon yellow,255,204,102" & newline & \
+		"17,afternoon white,255,255,255" & newline & \
+		"22,evening light blue,102,102,255" & newline & \
+		"24,night blue,0,0,255"
+end handler
+
+--
+handler drawTime() returns nothing
+	--variable tTime as Number
+	--put the universal time into tTime
+	variable tK as List
+	variable tL as List
+	variable tM as List
+	variable tN as List
+	variable tQ as List
+	variable tC as Number
+	variable tD as Number
+	variable tF as Number
+	variable tI as Number
+	variable tJ as Number
+	variable tStrt as Number
+	variable tS as String
+	variable tX as Number
+	variable tY as Number
+	put 28 into tF
+	put 0.5 into tX
+	put 1 into tY
+	put hhSecondsToDate() into mCurrentTime
+	put numberOfPlaces(mDigitBase) into tN
+	put [0, 0.6+tN[1], 1.2+tN[1]+tN[2]] into tQ
+	repeat with tC from 1 up to 3 -- hours,minutes,seconds
+		put hhBase(element (tC+3) of mCurrentTime,mDigitBase,tN[tC]) into tK
+		put [] into tL
+		repeat with tD from 1 up to tN[tC]
+			push getPath([ tK[tD],tX,tY,tF*(tD+tQ[tC]),-24 ]) onto tL
+		end repeat
+		if tC < 3 then
+			push getPath([-1,tX,tY,tF*(tD+tQ[tC])+2.4,-24 ]) onto tL -- colon
+		else
+			push getPath([-2,tX,tY,tF*(tD+tQ[tC])+2.4,-24 ]) onto tL -- period
+		end if
+		put tL into mPathList[tC]
+	end repeat
+	put "" into tS
+	subtract 1 from tN[3]
+	repeat with tI from 1 up to 3
+		repeat with tJ from 1 up to 1+tN[tI]
+			put the instructions of mPathList[tI][tJ] after tS
+		end repeat
+	end repeat
+	if mShowDigitBase then
+		put hhBase(mDigitBase,99,1) into tK
+		put [] into tL
+		if mDigitBase > 9 then
+			push getPath([ tK[1],tX,tY,tF*(2+tN[3]+tQ[3])+14.4,-24 ]) onto tL
+		else
+			push getPath([ tK[1],tX,0.42*tY,tF*(2+tN[3]+tQ[3])+14.4,4 ]) onto tL
+		end if
+		put tL into mPathList[4]
+		put the instructions of mPathList[3][2+tN[3]] after tS -- period
+		put the instructions of mPathList[4][1] after tS -- base
+	end if
+	put path tS into mPath
+	put the bounding box of mPath into mBounds
+	translate mPath by  [-the left of mBounds -the width  of mBounds/2, \
+								-the top  of mBounds -the height of mBounds/2]
+	put the bounding box of mPath into mBounds
+	if mUseFengShuiColors then
+		if element 4 of mCurrentTime is not mOldHour then
+			put element 4 of mCurrentTime into mOldHour
+	 		put getFSColor(mOldHour) into mFSColor
+	 		put hhContrastColor(mFSColor) into mContrastFSColor
+	 	end if
+	end if
+	-- is in average < 2 millisecs
+	-- log the universal time - tTime
+end handler
+
+--
+handler getPath(in pL as List) returns Path
+	variable tP as Path
+	variable tS as String
+	if pL[1] is -1 then -- colon
+		put "M0,17 L0,18 M0,31 L0,32" into tS
+	else if pL[1] is -2 then -- period
+		put "M0,47 L0,48" into tS
+	else -- w 30, h 48
+		if pL[1] > 9 then
+			put element (1+the trunc of (pL[1]/10)) of kSegments into tS
+			put element 1+(pL[1] mod 10) of kSegments2 after tS
+			put 0.4 into pL[3]
+		else
+			put element (1+pL[1]) of kSegments into tS
+		end if
+	end if
+	put path tS into tP
+	transform tP by transform with matrix \
+		[pL[2], 0, 0, pL[3], pL[4], pL[5]]
+	return tP
+end handler
+
+--
+handler hhBase(in pD as Number, in pB as Number, in pN as Number) returns List
+	variable tJ as Number
+	variable tM as Number
+	variable tL as List
+	put [] into tL
+	if pN > 1 then
+		repeat with tJ from pN-1 down to 1
+			put the trunc of (pD/(pB^tJ)) into tM
+			subtract tM*pB^tJ from pD
+			push tM onto tL
+		end repeat
+	end if
+   push (pD mod pB) onto tL
+   return tL
+end handler
+
+--
+handler numberOfPlaces(in pB as Number) returns List
+	if pB < 2 or pB > 99 then
+		return [0,0,0]
+	else if pB > 59 then -- pB=60..99
+		return [1,1,1]
+	else if pB > 23 then -- pB=24..59
+		return [1,2,2]
+	else if pB > 7 then  -- pB=8..23
+		return [2,2,2]
+	else if pB > 4 then  -- pB=5..7
+		return [2,3,3]
+	else if pB > 3 then  -- pB=4
+		return [3,3,3]
+	else if pB > 2 then  -- pB=3
+		return [3,4,4]
+	else if pB > 1 then  -- pB=2
+		return [5,6,6]
+	end if
+end handler
+
+-- in/out color
+handler hhContrastColor(in pC as Color) returns Color
+	variable tA as Number
+	variable tB as List
+	variable tF as List
+	put  [the trunc of (255*the red of pC), \
+			the trunc of (255*the red of pC), \
+			the trunc of (255*the red of pC)] into tB
+	put the alpha of pC into tA
+	put adjustContrastRatio(5, tB)&[tA] into tF
+	return color [tF[1]/255, tF[2]/255, tF[3]/255, tA]
+end handler
+
+-- pMinContrast is usually a number between 4.0 and 7.0, I use mostly 5.5
+-- pBaseColor is usually used as backColor, pClr is a "startColor"
+-- The result is again in the form [r,g,b], usable as "color [r/255, g/255, b/255]
+-- (or convert it to a string for use in LC Script)
+-- The result is here a grayLevel (r=g=b), usually not too bad in contrast.
+handler adjustContrastRatio(in pMinContrast as Number,in pBaseClr as List) returns List
+	variable goDown as Boolean
+	put false into goDown
+	variable tClr as List
+	variable tC as Number
+	variable tD as Number
+	if 0.2126*pBaseClr[1]+0.7152*pBaseClr[1]+0.0722*pBaseClr[1] > 385 then
+		put [255,255,255] into tClr
+		put -3 into tD
+	else
+		put [0,0,0] into tClr
+		put 3 into tD
+	end if
+	repeat 85 times
+		if ( contrastRatio(rLuminance(tClr),rLuminance(pBaseClr)) > pMinContrast ) then
+			exit repeat
+		end if
+		repeat with tC from 1 up to 3
+			add tD to tClr[tC]
+		end repeat
+	end repeat
+	return tClr
+end handler
+
+-- pRGB is of the form [r,g,b] where each element r,g,b is an integer in range 0-255
+handler rLuminance(in pRGB as List) returns Number
+	variable tLuminance as Number
+	put 0 into tLuminance
+	variable tWeights as List
+	put [0.2126,0.7152,0.0722] into tWeights
+	variable tC as Number
+	repeat with tC from 1 up to 3
+		variable tCC
+		variable tRi
+		put pRGB[tC]/255 into tCC
+		if tCC <= 0.03928 then
+			put tCC/12.92 into tRi
+		else
+			put ((tCC+0.055)/1.055)^2.4 into tRi
+		end if
+		add (tWeights[tC]*tRi) to tLuminance
+	end repeat
+	return tLuminance
+end handler
+
+-- computes ratio of lighter against darker
+handler contrastRatio (in pL1 as Number, in pL2 as Number) returns Number
+	if pL1 > pL2 then -- pL2 is darker
+		return (pL1 + 0.05) / (pL2 + 0.05)
+	else
+		return (pL2 + 0.05) / (pL1 + 0.05)
+	end if
+end handler
+
+-- not used, is here for completeness: converts a 6-element date into unix-seconds
+handler hhDateToSeconds(in pDate as List) returns Number
+  if pDate[2] < 3 then
+    subtract 1 from pDate[1]
+    add 12 to pDate[2]
+  end if
+  return (pDate[1]*365 + the trunc of (pDate[1]/4) - the trunc of (pDate[1]/100) + the trunc of (pDate[1]/400) + the trunc of ((3*pDate[2]+3)/5) + 30*pDate[2] + pDate[3] - 719561)*86400 + pDate[4]*3600 + pDate[5]*60 + pDate[6]
+end handler
+
+--
+handler doNothing(in pS as String) returns nothing
+end handler
+
+-- converts universal time + current UTC-offset to date
+handler hhSecondsToDate() returns List
+  variable tOffset as Number
+  put hhLocalOffset() into mLocalOffset
+  if mTimeZone is nothing then
+    put hhLocalOffset() into tOffset
+  else
+    put mTimeZone into tOffset
+  end if
+  return hhAnySecondsToDate(the universal time, tOffset)
+end handler
+
+-- LCS workaround
+handler hhLocalOffset() returns Number
+  variable tX as String
+  execute script "return word 6 of the internet date"
+  put the result into tX
+  return ((char 1 to 3 of tX) parsed as number)*3600 + (((char 1 of tX) & (char 4 to 5 of tX)) parsed as number)*60
+end handler
+
+-- converts any unix-seconds to date
+handler hhAnySecondsToDate(in pU as Number, in pOffset as Number) returns List
+  variable tL as List
+  put [0,0,0,0,0,0,0] into tL
+  variable tU as Number
+  variable tS as Number
+  variable tB as Number
+  variable tC as Number
+  variable tD as Number
+  variable tE as Number
+  put pOffset into tL[7]
+  if mPlatform is "Win32" then
+    put the trunc of (pU + pOffset - mLocalOffset) into tU
+  else
+    put the trunc of (pU + pOffset) into tU
+  end if
+  put tU mod 86400 into tS
+  put the trunc of (tU/86400) into tU
+  put the trunc of (tS/3600) into tL[4]
+  put (the trunc of (tS/60)) mod 60 into tL[5]
+  put the trunc of (tS mod 60) into tL[6]
+  put 15+the trunc of ((tU*4+102032)/146097) into tS -- second use of tS
+  put tU+2442113+tS-the trunc of (tS/4) into tB
+  put the trunc of ((tB*20-2442)/7305) into tC
+  put tB-365*tC-the trunc of (tC/4) into tD
+  put the trunc of (tD*1000/30601) into tE
+  put tD-tE*30-the trunc of (tE*601/1000) into tL[3]
+  if tE < 14 then
+    put tC-4716 into tL[1]
+    put tE-1 into tL[2]
+  else
+    put tC-4715 into tL[1]
+    put tE-13 into tL[2]
+  end if
+  put myCurrentDate(tL) into mCurrentDate
+  return tL
+end handler
+
+-- format as the internet date, respects current UTC-offset
+handler myCurrentDate(in pList as List) returns String
+  -- Sun, 2 Oct 2016 12:11:38 +0200
+  variable tN as Number
+  variable tS as String
+  variable tL as List
+  put pList into tL
+  put dayOfWeek(tL) & ", " & (tL[3] formatted as string) & " " into tS
+  put char tL[2]*3-2 to tL[2]*3 of "JanFebMarAprMayJunJulAugSepOctNovDec" after tS
+  put " " & (tL[1] formatted as string) & " " after tS
+  put hhNumberToString(tL[4],2,0) & ":" & \
+    hhNumberToString(tL[5],2,0) & ":" & \
+    hhNumberToString(tL[6],2,0) & " " after tS
+  if tL[7] < 0 then
+    put "-" after tS
+    multiply tL[7] by -1
+  else
+    put "+" after tS
+  end if
+  put the trunc of (tL[7]/3600) into tN
+  put hhNumberToString(tN,2,0) after tS
+  put (the trunc of (tL[7]/60)) mod 60 into tN
+  put hhNumberToString(tN,2,0) after tS
+  return tS
+end handler
+
+-- CF Gauss method
+handler dayOfWeek (in pDate as List) returns String
+    if pDate[2] < 3 then
+      subtract 1 from pDate[1]
+  end if
+  variable tD as Number
+  put pDate[3] into tD
+  add ((char pDate[2] of "032503514624") parsed as number) to tD
+  -- gregorian:
+  add ((char 1+(the trunc of (pDate[1]/100) mod 4) of "0531") parsed as number) to tD
+  -- julian: add ((char 1+(the trunc of (pDate[1]/100) mod 7) of "5432106") \
+  --         parsed as number) into tD
+  add (pDate[1] mod 100) to tD
+  add the trunc of ((pDate[1] mod 100)/4) to tD
+  put 3*(tD mod 7) into tD
+  return char 1+tD to 3+tD of "SunMonTueWedThuFriSat"
+end handler
+
+-- not used, is here for completeness: is element 4-6 of hhSecondsToDate()
+handler hhGetTimeComponents() returns List
+    variable tDate as List
+    variable tSeconds as Number
+    put [0,0,0,0] into tDate
+    put the universal time into tSeconds
+  if mTimeZone is not nothing then
+    put mTimeZone into tDate[4]
+  else
+    put hhLocalOffset() into tDate[4]
+  end if
+  put tSeconds mod 86400 into tSeconds
+  put the trunc of (tSeconds / 3600) into tDate[1]
+  put tSeconds mod 3600 into tSeconds
+  put the trunc of (tSeconds / 60) into tDate[2]
+  put (the trunc of tSeconds) mod 60 into tDate[3]
+  return tDate
+end handler
+
+--
+handler setTimeZone(in pTimeZone as optional Number) returns nothing
+  if not (pTimeZone is a number) then
+    if pTimeZone is not nothing then
+      throw "The timeZone offset must be a number or empty"
+    end if
+  end if
+  put pTimeZone into mTimeZone
+  put hhSecondsToDate() into mCurrentTime
+  redraw all
+end handler
+
+--
+handler getTimeZone() returns Number
+  if mTimeZone is not nothing then
+    return mTimeZone
+  else
+    return hhLocalOffset()
+  end if
+end handler
+
+--
+handler hhStringToColor(in pString as String) returns Color
+	if the number of chars in pString is 0 then
+		return color [0.0, 0.0, 0.0, 1.0]
+	end if
+	variable tList as List
+	variable tNum as Number
+	variable tR as Number
+	variable tG as Number
+	variable tB as Number
+	variable tA as Number
+	split pString by "," into tList
+	put the number of elements in tList into tNum
+	put ((element 1 of tList) parsed as number) into tR
+	put ((element 2 of tList) parsed as number) into tG
+	put ((element 3 of tList) parsed as number) into tB
+	if tNum = 4 then -- put first tA in range 0-1
+		put ((element 4 of tList) parsed as number) into tA
+		if not ("." is in pString) then
+			put tA/255 into tA
+		end if
+	else
+		put 1.0 into tA
+	end if
+	if "." is in pString then
+		return color [tR, tG, tB, tA]
+	else
+		return color [tR/255, tG/255, tB/255, tA]
+	end if
+end handler
+
+-- Returns the color as a four-item string
+handler hhColorToString(in pColor as Color) returns String
+	variable tString as String
+	if pColor is nothing then
+		return "0,0,0,255"
+	end if
+	put (the trunc of ((the red of pColor) * 255)) formatted as string into tString
+	put "," & (the trunc of ((the green of pColor) * 255)) formatted as string after tString
+	put "," & (the trunc of ((the blue of pColor) * 255)) formatted as string after tString
+	put "," & (the trunc of ((the alpha of pColor) * 255)) formatted as string after tString
+	return tString
+end handler
+
+-- pLeadNum, pDecNum is the same as the number format "pLeadNum zeros . pDecNum zeros"
+handler hhNumberToString(in pNum as Number,in pLeadNum as Number, in pDecNum as Number) returns String
+	variable tS as String
+	variable tN as Number
+	variable tC as Number
+	put the empty string into tS
+	if pNum < 0 then
+		put "-" into tS
+		multiply pNum by -1
+	end if
+	put the trunc of pNum into tN -- integer part
+	if tN = 0 then
+		repeat pLeadNum times
+			put "0" after tS
+		end repeat
+	else
+		repeat with tC from \
+		  	the maximum of pLeadNum-1 and (the trunc of the log of tN) down to 0
+			put the trunc of (tN/10^tC) formatted as string after tS
+			put tN mod 10^tC into tN
+		end repeat
+	end if
+	if pDecNum > 0 then -- fractional part
+		put "." after tS
+		put the rounded of (10^pDecNum*(pNum mod 1)) into tN
+		repeat with tC from pDecNum-1 down to 0
+			put the trunc of (tN/10^tC) formatted as string after tS
+			put tN mod 10^tC into tN
+		end repeat
+	end if
+	return tS
+end handler
+
+--mark GETTER/SETTER
+
+--
+handler setAllowContextMenu (in pBool as Boolean) returns nothing
+	put pBool into mAllowContextMenu
+	redraw all
+end handler
+
+--
+handler setTimeZoneMenuOnly (in pBool as Boolean) returns nothing
+	put pBool into mTimeZoneMenuOnly
+	redraw all
+end handler
+
+--
+handler setAllowGrab (in pBool as Boolean) returns nothing
+	put pBool into mAllowGrab
+	redraw all
+end handler
+
+--
+handler setAutoSize (in pS as String) returns nothing
+	put pS into mAutoSize
+	if pS is not "Fit" then
+		put false into mSyncScales
+		put mBaseHeight*mDigitScaleY into mAutoHeight
+		put mBaseWidth*mDigitScaleX into mAutoWidth
+	end if
+	setRect()
+	redraw all
+end handler
+
+--
+handler setBase(in pV as Number) returns nothing
+	put the rounded of pV into pV
+	-- could be 99 instead of 60, without any difference for a clock
+	put the maximum of 2 and (the minimum of 60 and pV) into pV
+	put pV into mDigitBase
+	drawTime()
+	--if mAutoSize is not "Fit" then
+		setRect()
+	--end if
+	redraw all
+end handler
+
+--
+handler setDigitScaleX(in pSize as Number) returns nothing
+	if mAutoSize is "Fit" then
+		put the minimum of 4 and (the maximum of 0.3 and pSize) into mDigitScaleX
+		if mSyncScales then
+			put mDigitScaleX into mDigitScaleY
+		end if
+		put mBaseHeight*mDigitScaleY into mAutoHeight
+		put mBaseWidth*mDigitScaleX into mAutoWidth
+		setRect()
+	end if
+end handler
+
+--
+handler setDigitScaleY(in pSize as Number) returns nothing
+	if mAutoSize is "Fit" then
+		put the minimum of 4 and (the maximum of 0.3 and pSize) into mDigitScaleY
+		if mSyncScales then
+			put mDigitScaleY into mDigitScaleX
+		end if
+		put mBaseHeight*mDigitScaleY into mAutoHeight
+		put mBaseWidth*mDigitScaleX into mAutoWidth
+		setRect()
+	end if
+end handler
+
+--
+handler setShowDigitBase (in pBool as Boolean) returns nothing
+	put pBool into mShowDigitBase
+	drawTime()
+	setRect()
+end handler
+
+--
+handler setUseTimeColor (in pBool as Boolean) returns nothing
+	put pBool into mUseTimeColor
+	if pBool then
+		put hhContrastColor(mTimeColor) into mContrastTimeColor
+	end if
+	redraw all
+end handler
+
+--
+handler setUseContrastFill (in pBool as Boolean) returns nothing
+	put pBool into mUseContrastFill
+	if pBool then
+		put hhContrastColor(mTimeColor) into mContrastTimeColor
+		put hhContrastColor(mStrokeColor) into mContrastStrokeColor
+		put getFSColor(element 4 of mCurrentTime) into mFSColor
+		put hhContrastColor(mFSColor) into mContrastFSColor
+	end if
+	redraw all
+end handler
+
+--
+handler setUseFengShuiColors (in pBool as Boolean) returns nothing
+	put pBool into mUseFengShuiColors
+	put getFSColor(element 4 of mCurrentTime) into mFSColor
+	put hhContrastColor(mFSColor) into mContrastFSColor
+	redraw all
+end handler
+
+--
+handler setTimeColor(in pColor as String) returns nothing
+	put hhStringToColor(pColor) into mTimeColor
+	put hhContrastColor(mTimeColor) into mContrastTimeColor
+	redraw all
+end handler
+
+--
+handler getTimeColor() returns String
+	return hhColorToString(mTimeColor)
+end handler
+
+--
+handler setFillColor(in pColor as String) returns nothing
+	put hhStringToColor(pColor) into mFillColor
+	redraw all
+end handler
+
+--
+handler getFillColor() returns String
+	return hhColorToString(mFillColor)
+end handler
+
+--
+handler setStrokeColor(in pColor as String) returns nothing
+	put hhStringToColor(pColor) into mStrokeColor
+	put hhContrastColor(mStrokeColor) into mContrastStrokeColor
+	redraw all
+end handler
+
+--
+handler getStrokeColor() returns String
+	return hhColorToString(mStrokeColor)
+end handler
+
+--
+handler setStrokeWidth(in pN as Number) returns nothing
+	put the rounded of (the minimum of pN and 9) into mStrokeWidth
+	setRect()
+end handler
+
+--
+handler setSyncScales(in pB as Boolean) returns nothing
+	put pB into mSyncScales
+	if mAutoSize is not "Fit" then
+		put false into mSyncScales
+	end if
+	if mSyncScales then
+		put mDigitScaleX into mDigitScaleY
+	end if
+	setRect()
+end handler
+
+--mark PROPERTIES
+
+property widgetVersion get mWidgetVersion
+
+--mark BASIC
+
+--mark  timeZoneMenuOnly
+/**
+Syntax:
+set the timeZoneMenuOnly of <widget> to <pTrueOrFalse>
+get the timeZoneMenuOnly of <widget>
+
+Summary:
+Whether to allow only timezOnes in the context menu.
+
+Parameters:
+pTrueOrFalse: is true or false
+
+Example:
+set the timeZoneMenuOnly of widget "DigitClock" to \
+not the timeZoneMenuOnly of widget "DigitClock"
+
+Description:
+Use the timeZoneMenuOnly property to allow only timeZones in the widget's context menu (if that is allowed, see property allowContextMenu).
+**/
+property "timeZoneMenuOnly" get mTimeZoneMenuOnly set setTimeZoneMenuOnly
+
+--mark  allowContextMenu
+/**
+Syntax:
+set the allowContextMenu of <widget> to <pTrueOrFalse>
+get the allowContextMenu of <widget>
+
+Summary:
+Whether to allow the widget's context menu.
+
+Parameters:
+pTrueOrFalse: is true or false
+
+Example:
+set the allowContextMenu of widget "DigitClock" to \
+not the allowContextMenu of widget "DigitClock"
+
+Description:
+Use the allowContextMenu property to allow/disallow the context menu (which shows start/stop clock, allow/disallow grab and, for see or set, timezones).
+**/
+property "allowContextMenu" get mAllowContextMenu set setAllowContextMenu
+
+--mark  allowGrab
+/**
+Syntax:
+set the allowGrab of <widget> to <pTrueOrFalse>
+get the allowGrab of <widget>
+
+Summary:
+Whether to allow dragging the widget.
+
+Parameters:
+pTrueOrFalse: is true or false
+
+Example:
+set the allowGrab of widget "DigitClock" to \
+not the allowGrab of widget "DigitClock"
+
+Description:
+Use the allowGrab property to allow/disallow dragging the widget by grabbing it near its border.
+**/
+property "allowGrab" get mAllowGrab set setAllowGrab
+
+--mark  timeZone
+/**
+Syntax:
+set the timeZone of <widget> to <pOffset>
+get the timeZone of <widget>
+
+Parameters:
+pOffset: is a number of seconds
+
+Example:
+-- set the offset to minus 2 hours and 30 minutes
+-- 'the internet date' show this as "-0230"
+set the timeZone of widget "DigitClock" to (-2*60 + 30)*60
+-- returns the current offset from UTC in seconds
+get the timeZone of widget "DigitClock"
+
+Summary: The time zone offset from UTC in seconds. Default is your local offset.
+
+Description:
+Use the timeZone property to display the time of a timezone that may be different from
+local time. If the timeZone property is set to empty, then the clock displays the local
+time and get the timeZone returns the local UTC-offset.
+**/
+property timeZone get getTimeZone set setTimeZone
+metadata timeZone.editor is "com.livecode.pi.timezone"
+metadata timeZone.default is ""
+
+--mark  showDigitBase
+/**
+Syntax:
+set the showDigitBase of <widget> to <pTrueOrFalse>
+get the showDigitBase of <widget>
+
+Summary:
+Whether to show the current number base.
+
+Parameters:
+pTrueOrFalse: is true or false
+
+Example:
+set the showDigitBase of widget "DigitClock" to \
+not the showDigitBase of widget "DigitClock"
+
+Description:
+Use the showDigitBase property to display the current number base of the clock's display. If not shown you can conclude the base for example from the seconds (base = 1+ maximal last digit).
+**/
+property "showDigitBase" get mShowDigitBase set setShowDigitBase
+
+--mark  digitBase
+/**
+Syntax:
+set the digitBase of <widget> to <pNumber>
+get the digitBase of <widget>
+
+Parameters:
+pNumber: An integer in range 2 to 60.
+
+Example:
+set the digitBase of widget "DigitClock" to 24
+
+Summary: Set or get the digitBase property (=number base) for drawing the clock's display. You can set the base also to any value > 60 (up to 99), but of course the display is the same as for base 60.
+**/
+property digitBase get mDigitBase set setBase
+metadata digitBase.editor is "com.livecode.pi.number"
+metadata digitBase.min is "2"
+metadata digitBase.max is "60"
+metadata digitBase.step is "1"
+
+property "textFont" get mNothing set doNothing
+metadata textFont.user_visible is "false"
+property "textSize" get mNothing set doNothing
+metadata textSize.user_visible is "false"
+
+--mark  digitScaleX
+/**
+Syntax:
+set the digitScaleX of <widget> to <pNumber>
+get the digitScaleX of <widget>
+
+Parameters:
+pNumber: A positive number in range 0.5 to 4
+
+Example:
+set the digitScaleX of widget "DigitClock" to "1.2"
+
+Summary: Set or get the digitScaleX property (horizontal scale) for drawing the clock's numbers.
+**/
+property digitScaleX get mDigitScaleX set setDigitScaleX
+metadata digitScaleX.editor is "com.livecode.pi.number"
+metadata digitScaleX.min is "0.3"
+metadata digitScaleX.max is "4"
+metadata digitScaleX.step is "0.05"
+metadata digitScaleX.default is "0.5"
+
+--mark  syncScales
+/**
+Syntax:
+set the syncScales of <widget> to <pTrueOrFalse>
+get the syncScales of <widget>
+
+Summary:
+Whether to sync (set equal) the horizontal and vertical digitScales.
+
+Parameters:
+pTrueOrFalse: is true or false
+
+Example:
+set the syncScales of widget "DigitClock" to \
+not the syncScales of widget "DigitClock"
+
+Description:
+Use the syncScales property to synchronize (set equal) horizontal and vertical scaling of the widget.
+**/
+property "syncScales" get mSyncScales set setSyncScales
+
+--mark  digitScaleY
+/**
+Syntax:
+set the digitScaleY of <widget> to <pNumber>
+get the digitScaleY of <widget>
+
+Parameters:
+pNumber: A positive number in range 0.5 to 4
+
+Example:
+set the digitScaleY of widget "DigitClock" to "1.2"
+
+Summary: Set or get the digitScaleY property (vertical scale) for drawing the clock's numbers.
+**/
+property digitScaleY get mDigitScaleY set setDigitScaleY
+metadata digitScaleY.editor is "com.livecode.pi.number"
+metadata digitScaleY.min is "0.3"
+metadata digitScaleY.max is "4"
+metadata digitScaleY.step is "0.05"
+metadata digitScaleY.default is "0.5"
+
+--mark  autoSize
+/**
+Syntax:
+set the autoSize of <widget> to <pMode>
+get the autoSize of <widget>
+
+Summary:
+Sets or gets the base size of the numbers of the widget.
+
+Parameters:
+pMode: is "Width" or "Height" or "Fit"
+
+Example:
+set the autoSize of widget "DigitClock" to "Fit"
+
+Description:
+Sets the size of the numbers display automatic dependent on the current number base and the widget's width ("Width") or height ("Height") or the digit scales ("Fit").
+Using value "width" for autoSize *keeps the height constant* when changing the number base or digitScaleX.
+Using value "height" for autoSize *keeps the width constant* when changing the number base or digitScaleY.
+
+**/
+property "autoSize" get mAutoSize set setAutoSize
+metadata autoSize.editor is "com.livecode.pi.enum"
+metadata autoSize.options is "Fit,Height,Width"
+
+--mark  strokeWidth
+/**
+Syntax:
+set the strokeWidth of <widget> to <pNumber>
+get the strokeWidth of <widget>
+
+Parameters:
+pNumber: An integer > 1
+
+Example:
+set the strokeWidth of widget "DigitClock" to 8
+
+Summary: If set to true useShadow applies a (fixed, but scaled) dropShadow effect to the widget.
+
+Description:
+Use the strokeWidth property to set the stroke width of the drawn numbers. If the autoSize property is true then the stroke width is set dependent on the widget's width and the current number base.
+
+**/
+property strokeWidth	get mStrokeWidth set setStrokeWidth
+metadata strokeWidth.editor is "com.livecode.pi.number"
+metadata strokeWidth.min is "1"
+metadata strokeWidth.step is "1"
+
+--mark COLORS
+
+--mark  useContrastFill
+/**
+Syntax:
+set the useContrastFill of <widget> to <pTrueOrFalse>
+get the useContrastFill of <widget>
+
+Parameters:
+pTrueOrFalse: is true or false
+
+Example:
+set the useContrastFill of widget "DigitClock" to not \
+    the useContrastFill of widget "DigitClock"
+
+Summary: Whether to set the fill in contrat to the stroke
+
+Description:
+Use the useContrastFill property to use a fill color contrasting (by using luminance) the current stroke Color.
+*/
+property useContrastFill get mUseContrastFill set setUseContrastFill
+metadata useContrastFill.section is "Colors"
+
+--mark  fillColor
+/**
+Syntax:
+set the fillColor of <widget> to <pColor>
+get the fillColor of <widget>
+
+Summary:
+Sets or gets the color of the display's fill (background).
+
+Parameters:
+pColor: the fillColor, in RGB or RGBA format
+
+Example:
+set the fillColor of widget "DigitClock" to "255,127,0,127"
+set the fillColor of widget "DigitClock" to "255,127,0"
+-- returns a _four-item_ string
+get the fillColor of widget "DigitClock" -- "255,127,0,255"
+
+Description:
+Use the fillColor property to set the color of the display's background which is always used, may be fully transparent.
+The color is in the form of a 3 or 4 item string, the 4th optional item being the alpha value, all integers between 0 and 255.
+[You may also use numbers containing a decimal point between 0.0 and 1.0, for example "0.2,0.1,0.2".
+.: The "get" always returns _four_ items in the integer form (each in range 0-255). :.
+**/
+property "fillColor" get getFillColor set setFillColor
+metadata fillColor.section is "Colors"
+metadata fillColor.editor is "com.livecode.pi.colorwithalpha"
+
+--mark  strokeColor
+/**
+Syntax:
+set the strokeColor of <widget> to <pColor>
+get the strokeColor of <widget>
+
+Summary: Sets or gets the color of the display's frame.
+
+Parameters:
+pColor: The tip-color, in RGB or RGBA format
+
+Example:
+set the strokeColor of widget "DigitClock" to "255,127,0,127"
+set the strokeColor of widget "DigitClock" to "255,127,0"
+-- returns a _four-item_ string
+get the strokeColor of widget "DigitClock" -- "255,127,0,255"
+
+Description:
+Use the strokeColor property to set the color of the display's frame. This color is used if the useFengShuiColors property is set to false.
+The color is in the form of a 3 or 4 item string, the 4th optional item being the alpha value, all integers between 0 and 255.
+[You may also use numbers containing a decimal point between 0.0 and 1.0, for example "0.2,0.1,0.2".
+.: The "get" always returns _four_ items in the integer form (each in range 0-255). :.
+**/
+property "strokeColor" get getStrokeColor set setStrokeColor
+metadata strokeColor.section is "Colors"
+metadata strokeColor.editor is "com.livecode.pi.colorwithalpha"
+
+--mark  timeColor
+/**
+Syntax:
+set the timeColor of <widget> to <pColor>
+get the timeColor of <widget>
+
+Summary: Sets or gets the color of the display's text (timeAndDate).
+
+Parameters:
+pColor: The timeColor, in RGB or RGBA format
+
+Example:
+set the timeColor of widget "DigitClock" to "255,127,0,127"
+set the timeColor of widget "DigitClock" to "255,127,0"
+-- returns a _four-item_ string
+get the timeColor of widget "DigitClock" -- "255,127,0,255"
+
+Description:
+Use the timeColor property to set the color of the clock's text display. This color is used if the useFengShuiColors property is set to false or the useTimeColor property is set to true.
+The color is in the form of a 3 or 4 item string, the 4th optional item being the alpha value, all integers between 0 and 255.
+[You may also use numbers containing a decimal point between 0.0 and 1.0, for example "0.2,0.1,0.2".
+.: The "get" always returns _four_ items in the integer form (each in range 0-255). :.
+**/
+property "timeColor" get getTimeColor set setTimeColor
+metadata timeColor.section is "Colors"
+metadata timeColor.editor is "com.livecode.pi.colorwithalpha"
+
+--mark  useTimeColor
+/**
+Syntax:
+set the useTimeColor of <widget> to <pTrueOrFalse>
+get the useTimeColor of <widget>
+
+Parameters:
+pTrueOrFalse: is true or false
+
+Example:
+set the useTimeColor of widget "DigitClock" to not \
+    the useTimeColor of widget "DigitClock"
+
+Summary: Controls the use of the clock's timeColor (color of the text/date).
+
+Description:
+Use the useTimeColor property also to override if poperty useFengShuiColors is set to true.
+*/
+property useTimeColor get mUseTimeColor set setUseTimeColor
+metadata useTimeColor.section is "Colors"
+
+--mark  useFengShuiColors
+/**
+Syntax:
+set the useFengShuiColors of <widget> to <pTrueOrFalse>
+get the useFengShuiColors of <widget>
+
+Parameters:
+pTrueOrFalse: is true or false
+
+Example:
+set the useFengShuiColors of widget "DigitClock" to not \
+    the useFengShuiColors of widget "DigitClock"
+
+Summary: Controls the coloring of frame (and optionally text) of the display.
+If useFengShuiColors is false then the strokeColor is used for the frame and the timeColor for the date/text.
+
+Description:
+Controls the coloring of the display's frame and, if useTimeColor is false, of the display's text by FengShuiColors. These are explained in the widget's description.
+*/
+property useFengShuiColors get mUseFengShuiColors set setUseFengShuiColors
+metadata useFengShuiColors.section is "Colors"
+
+--mark  fengShuiColoring
+/**
+Syntax:
+get the fengShuiColoring of <widget>
+-- returns a 'header'-line and 7 value-lines of the form:
+-- stopHour,name,colorRed,colorGreen,colorBlue
+-- value-line 1 and 7 differ only in the first item.
+Summary: Gets the "hour ramps" and the coloring in the hours range defined by that ramps.
+
+Example:
+get the fengShuiColoring of widget "DigitClock"
+
+Description:
+Use the fengShuiColoring property to get an info, for example if you wish to adjust the hoursColor, minutesColor or secondsColor accordingly.
+The format are seven lines of text of the form _stopHour, name, colorRed, colorGreen, colorBlue_
+StopHour is an hour (an integer between 1 and 24), the color values are integers between 0 and 255.
+**/
+property "fengShuiColoring"   get getFengShuiColoring
+metadata fengShuiColoring.section  is "Colors"
+
+
+end widget

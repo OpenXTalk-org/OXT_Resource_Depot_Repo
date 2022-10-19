@@ -1,0 +1,1 @@
+A progress display that can display as circular or as a traditional rectangular bar

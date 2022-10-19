@@ -1,0 +1,1395 @@
+/**
+OrientedText v1.5.1 [-hh fecit, 2017-2018, based on common work with Cyril Pruszko]
+
+OrientedText is a widget that display one line of text. The widget is rotatable, its size is (optionally) adjusted to the rotated line of text. Options are also available for
+the background of the text, the textfont and the text size, for fillColor, strokeColor and the stroke width. Colors may be chosen as contrastColors.
+
+++ Rotation is possible by dragging the text, the current angle is shown.
+++ The bounding box of the rotated text can (optionally) be displayed.
+
+++ MouseMove is heavily needed by the widget and is not 'passed', other mouse handlers are _fully_ available (or 'passed' from the widget).
+
+++ (Added in 1.5.0) The widget sends a message "clickedInTransparency x,y" if a click is in its 'transparent' part (not the rotated text box).
+So you can use that to have a CLICK-THROUGH-TRANSPARENCY. See the demo-stack for an example.
+
+The widget passes the following messages to LC Script (you can use them in your widget's script):
+mouseEnter, mouseLeave, mouseUp.
+**/
+
+widget org.openxtalk.hh.orientedtext
+
+use com.livecode.canvas
+use com.livecode.widget
+use com.livecode.engine
+use com.livecode.math
+use com.livecode.library.widgetutils
+
+constant kWidgetVersion is "hhOrientedText_v153 [fat widget]"
+
+metadata title is "hhOText"
+metadata author is "Hermann Hoch and Cyril Pruszko"
+-- first version by Cyril, v1.0.0-1.2.0 by [-hh, Nov 2016-Jun 2017]
+-- final version 1.5.0-1.5.2 by [-hh, Sep 2017/Oct 2018]
+metadata version is "1.5.3"
+metadata preferredSize is "210,60"
+metadata svgicon is "M0 63.5 C 0 127,0 127,136 127 C 272 127,272 127,272 63.5 C 272 0,272 0,136 0 C 0 0,0 0,0 63.5 M124.796 41.250 C 125.091 48,125.091 48,114.546 48 C 104 48,104 48,104 73 C 104 98,104 98,95.5 98 C 87 98,87 98,87 73 C 87 48,87 48,76.5 48 C 66 48,66 48,66 41.667 C 66 38.183,66.307 35.027,66.682 34.652 C 67.057 34.277,80.219 34.089,95.932 34.235 C 124.5 34.5,124.5 34.5,124.796 41.250 M244 43 C 244 49,244 49,252.050 49 C 260.1 49,260.1 49,259.8 54.750 C 259.5 60.5,259.5 60.5,251.750 60.792 C 244 61.084,244 61.084,244 70.960 C 244 76.392,244.280 81.565,244.621 82.455 C 245.590 84.979,250.447 87,255.544 87 C 260.188 87,260.188 87,259.480 92.250 C 259.090 95.138,258.534 97.897,258.244 98.383 C 257.343 99.894,242.548 98.336,237.786 96.229 C 235.327 95.142,232.232 92.733,230.908 90.876 C 228.710 87.794,228.470 86.345,228.152 74.250 C 227.804 61,227.804 61,224.402 61 C 221 61,221 61,221 55 C 221 49,221 49,225 49 C 229 49,229 49,229 43 C 229 37,229 37,236.5 37 C 244 37,244 37,244 43 M52.436 51.410 C 64.386 58.413,68.353 74.231,61.375 87.053 C 55.402 98.027,40.143 102.751,27.5 97.540 C 18.551 93.851,13.026 84.767,13.010 73.718 C 12.998 65.830,14.769 60.889,19.301 56.165 C 25.246 49.967,30.812 47.934,40.644 48.370 C 46.243 48.618,48.794 49.275,52.436 51.410 M151.101 49.153 C 159.215 51.905,164.493 59.171,165.464 68.927 C 165.969 74,165.969 74,149.417 74 C 132.865 74,132.865 74,133.537 76.250 C 135.674 83.412,140.874 86.204,153.484 86.961 C 162.468 87.5,162.468 87.5,162.143 92 C 161.639 98.983,160.983 99.347,150.018 98.727 C 128.925 97.535,118 88.716,118 72.881 C 118 58.311,127.953 48.273,142.601 48.070 C 145.406 48.032,149.231 48.519,151.101 49.153 M188.5 56.044 C 191.250 60.419,193.794 63.998,194.154 63.999 C 194.513 64,197.134 60.373,199.977 55.941 C 202.879 51.418,205.663 48.097,206.323 48.372 C 206.970 48.642,209.863 49.650,212.750 50.614 C 215.637 51.577,218 52.750,218 53.221 C 218 53.692,215.265 58.144,211.923 63.115 C 208.580 68.086,206.059 72.712,206.321 73.394 C 206.583 74.077,209.543 78.816,212.899 83.927 C 218.377 92.270,219.787 95,218.619 95 C 218.410 95,215.305 96.104,211.720 97.454 C 205.201 99.907,205.201 99.907,199.525 90.954 C 196.403 86.029,193.715 82,193.551 82 C 193.386 82,190.860 85.713,187.936 90.250 C 185.012 94.787,182.347 98.836,182.014 99.246 C 181.235 100.205,169.763 95.789,169.282 94.345 C 169.081 93.744,171.898 88.887,175.541 83.551 C 182.165 73.850,182.165 73.850,176.144 64.675 C 172.832 59.629,169.982 54.898,169.811 54.162 C 169.540 52.996,179.287 48.387,182.5 48.161 C 183.050 48.123,185.750 51.670,188.5 56.044 M135.923 60.923 C 130.796 66.050,131.747 67,142 67 C 146.950 67,151 66.753,151 66.450 C 151 66.148,150.320 64.586,149.490 62.980 C 146.517 57.232,140.523 56.323,135.923 60.923 M33.655 61.133 C 31.241 62.536,28.050 69.648,28.022 73.685 C 27.954 83.586,35.748 90.250,43.006 86.497 C 50.517 82.613,51.079 66.671,43.883 61.631 C 41.239 59.779,36.391 59.543,33.655 61.133Z"
+
+constant kPi180 is 57.29577951 -- 180/pi
+constant kRotation is "M6.198,49.601L10.586,54H2v2h11l1-1V44h-2v8.59l-4.246-4.247c-8.569-11.453-7.396-27.712,2.741-37.849    C15.972,5.017,23.254,2,31,2V0C22.72,0,14.936,3.225,9.081,9.08C-1.773,19.934-3.013,37.354,6.198,49.601z M53.414,10H62V8H51l-1,1v11h2v-8.59l4.246,4.247c8.569,11.453,7.396,27.712-2.741,37.849C48.028,58.983,40.746,62,33,62v2    c8.28,0,16.064-3.225,21.919-9.08c10.854-10.854,12.094-28.273,2.883-40.521L53.414,10z" -- rotation svg path
+
+variable mAdjustSize as Boolean
+variable mAngle as Number
+variable mBackColor as List
+variable mBaseAngle as Number
+variable mBorderColor as List
+variable mCenter as Point
+variable mChangeTextHeight as Number
+variable mChangeTextWidth as Number
+variable mDisplayAngle as Number
+variable mDown as Boolean
+variable mE as ScriptObject
+variable mFontName as String
+variable mFontSize as Number
+variable mHeight as Number
+variable mInstructions as String
+variable mLeftShift as Number
+variable mLoc as String
+variable mMouse as Point
+variable mOldMouseLoc as Point
+variable mPath as Path
+variable mPath2 as Path
+variable mRightClick as Boolean
+variable mRoundRadius as Number
+variable mScroll as Boolean
+variable mShowAngle as Boolean
+variable mShowBounds as Boolean
+variable mStrokeBack as Boolean
+variable mStrokeWidth as Number
+variable mText as String
+variable mTextColor as List
+variable mTopShift as Number
+variable mUseContrastColor as Boolean
+variable mUseDestinationOut as Boolean
+variable mUseScrollWheel as Boolean
+variable mUseTextColorForBorder as Boolean
+variable mWidgetVersion as String
+variable mWidth as Number
+
+--mark PUBLIC HANDLERS
+
+--
+public handler OnCreate()
+	put kWidgetVersion into mWidgetVersion
+	put my script object into mE
+	put "Lucida Grande" into mFontName
+	put "Drag to rotate" into mText
+	put 0 into mLeftShift
+	put 0 into mTopShift
+	put 0 into mChangeTextWidth
+	put 0 into mChangeTextHeight
+	put 24 into mFontSize
+	put 0 into mAngle
+	put 4 into mStrokeWidth
+	put 0 into mBaseAngle
+	put 0 into mDisplayAngle
+	put 16 into mRoundRadius
+	put [1.0, 1.0, 1.0, 0.8] into mBackColor
+	put mBackColor into mBorderColor
+	put [0.6,0.0,0.0] into mTextColor
+	put rectangle path of rectangle[0,0,210,60] into mPath
+	put point [105,30] into mCenter
+	put "" into mLoc
+	put 210 into mWidth
+	put 60 into mHeight
+	put the mouse position into mMouse --> stores the click position
+	put the mouse position into mOldMouseLoc --> used by OnMouseMove()
+	put true into mAdjustSize
+	put false	into mDown
+	put false	into mRightClick
+	put false	into mScroll
+	put true	into mShowAngle
+	put false 	into mShowBounds
+	put true 	into mStrokeBack
+	put false	into mUseContrastColor
+	put false 	into mUseDestinationOut
+	put true	into mUseScrollWheel
+	put true into mUseTextColorForBorder
+end handler
+
+--
+public handler OnOpen()
+	if my width is not mWidth then
+		set property "width" of mE to mWidth
+	end if
+	if my height is not mHeight then
+		set property "height" of mE to mHeight
+	end if
+	variable tR as Rectangle
+	variable tS as String
+	put my rectangle into tR
+	put 	(the rounded of ((the left of tR+the right  of tR)/2)) formatted as string & \
+			(the rounded of ((the top  of tR+the bottom of tR)/2)) formatted as string into tS
+	if mLoc is not "" and tS is not mLoc then
+		post "set loc of me to " & mLoc
+	end if
+	redraw all
+end handler
+
+--
+public handler OnClose()
+	cancel timer
+end handler
+
+--
+public handler OnPaint()
+	variable tFont as String
+	variable tLabelRect as Rectangle
+	variable tWidth as Number
+	variable tHeight as Number
+	variable tPath as Path
+	variable tPath2 as Path
+	variable tBounds as Rectangle
+	if mShowBounds then
+		set the stroke width of this canvas to 1
+		set the dashes of this canvas to [10,2]
+		set the paint of this canvas to solid paint with color [0,0,0,0.38]
+		stroke rectangle path of my bounds on this canvas
+		set the dashes of this canvas to []
+	end if
+	save state of this canvas
+	put my bounds into tLabelRect
+	put my width/2 into tWidth
+	put my height/2 into tHeight
+	put point [tWidth,tHeight] into mCenter
+	set the font of this canvas to font mFontName at size mFontSize
+	put the image bounds of text mText on this canvas into tBounds
+	put changeRect([-mChangeTextWidth/2-1.1*mFontSize, -mChangeTextHeight/2-0.2*mFontSize, \
+							mChangeTextWidth/2+0.9*mFontsize, mChangeTextHeight/2+0.9*mFontSize], \
+							tBounds) into tLabelRect
+	set tPath2 to rectangle path of tLabelRect
+	set tPath to rounded rectangle path of tLabelRect with radius mRoundRadius
+	--
+	translate this canvas by [tWidth, tHeight]
+	rotate this canvas by mAngle
+	translate this canvas by [-tWidth, -tHeight]
+	--
+	translate tPath by [tWidth-the width of tBounds/2, tHeight-0.1*mFontSize]
+	translate tPath2 by [tWidth-the width of tBounds/2, tHeight-0.1*mFontSize]
+	put tPath2 into mPath --> will be used by OnMouseMove() and next OnMouseDown()
+	set the paint of this canvas to solid paint with color mBackColor
+	fill tPath on this canvas
+	-- stroke tPath2 on this canvas--> used for developing
+	set the paint of this canvas to solid paint with color mTextColor
+	if mUseDestinationOut then
+		save state of this canvas
+		set the blend mode of this canvas to "destination out"
+	end if
+	fill text mText at point [mLeftShift - 0.2*mFontSize + (my width-the width of tBounds)/2, mTopShift - 0.1*mFontSize + (my height+the height of tBounds)/2] on this canvas
+	if mUseDestinationOut then
+		restore state of this canvas
+	end if
+	if mStrokeBack then -- current state is mTextColor
+		if not mUseTextColorForBorder then
+			set the paint of this canvas to solid paint with color mBorderColor
+		end if
+		set the stroke width of this canvas to mStrokeWidth
+		stroke tPath on this canvas
+	end if
+	if (mDown or mScroll) then
+		if mShowAngle then
+			variable tPath as Path
+			variable tList as List
+			variable tS as List
+			variable tR as Rectangle
+			variable tRX as Number
+			variable tRY as Number
+			put path kRotation into tPath -- =rotating icon
+			put the bounding box of tPath into tR
+			scale tPath by [70/the width of tR,(50+mStrokeWidth)/the width of tR]
+			put the bounding box of tPath into tR
+			put the width of tR/2 into tRX
+			put the height of tR/2 into tRY
+			translate this canvas by [my width/2 - tRX, my height/2-tRY]
+			split (mDisplayAngle formatted as string) by "." into tS
+			put "°" after tS[1]
+			set the font of this canvas to font mFontName with bold style at size 13
+			set the paint of this canvas to solid paint with color [0.9,0.9,0.9,0.9]
+			fill ellipse path centered at point[tRX-3,tRY] with radii [32,24] on this canvas
+			set the stroke width of this canvas to 1
+			set the paint of this canvas to solid paint with color [0.2,0.2,0.2]
+			save state of this canvas
+				set the blend mode of this canvas to "difference"
+				fill tPath on this canvas
+			restore state of this canvas
+			set the paint of this canvas to solid paint with color [0.1,0.1,0.1]
+			--
+			translate this canvas by [tRX,tRY]
+			rotate this canvas by -mAngle
+			translate this canvas by [-tRX, -tRY]
+			--
+			fill text tS[1] at center of tR on this canvas
+		else
+			restore state of this canvas
+			set the blend mode of this canvas to "difference"
+			set the paint of this canvas to solid paint with color [1.0,1.0,1.0,0.85]
+			fill circle path centered at the current mouse position with radius 9 on this canvas
+		end if
+	end if
+end handler
+
+--
+public handler OnTimer()
+	if mRightClick then --> GRAB
+		cancel timer
+		variable tMouse as Point
+		put the mouse position into tMouse
+		variable tRect as Rectangle
+		put my rectangle into tRect
+		set property "left" of mE to \
+			(the left of tRect + the x of tMouse - the x of mMouse)
+		set property "top"  of mE to \
+			(the top  of tRect + the y of tMouse - the y of mMouse)
+		redraw all
+		schedule timer in 0.032 seconds
+	end if
+end handler
+
+--
+public handler OnMouseMove()
+	if mDown then
+		variable tM as Point
+		put the mouse position into tM
+		if (the x of tM is not the x of mOldMouseLoc) or (the y of tM is not the y of mOldMouseLoc) then
+			put tM into mOldMouseLoc
+			setTextAngle(getTextAngle(tM)) --> sets mAngle
+			redraw all
+			checkAdjusting()
+		end if
+	end if
+end handler
+
+--
+public handler OnMouseDown()
+	put (the click button is 3) into mRightClick
+	put the click position into mMouse
+	put true into mDown
+	variable tPath
+	put mPath into tPath
+	translate tPath by [-my width/2, -my height/2]
+	rotate tPath by mAngle
+	translate tPath by [my width/2, my height/2]
+	if hhPointIsInTransformedRect(the mouse position,the instructions of tPath) then
+		if mRightClick then
+			put false into mDown
+			schedule timer in 0.016 seconds
+		else
+			--put rectangle path of my bounds into mPath --> initialize for OnMouseMove()
+			put point [my width/2, my height/2] into mCenter
+			variable tAngle as Number
+			put getTextAngle(mMouse) into tAngle
+			put tAngle-mAngle into mBaseAngle
+			redraw all
+			checkAdjusting()
+		end if
+	else
+		put false into mDown
+		variable tA as String
+		put numListToString([the left of my rectangle + the x of mMouse, \
+			the top of my rectangle + the y of mMouse, the click button]) into tA
+		post "clickedInTransparency" with [tA]
+	end if
+end handler
+
+--
+public handler OnDo(in pScript as String) returns nothing
+	put the lower of pScript into pScript
+	if pScript is "mousedown" then
+		OnMouseDown()
+	else if pScript is "mouseup" then
+		OnMouseUp()
+	else if pScript is "mousemove" then
+		OnMouseMove()
+	else if pScript is "setdefaults" then
+		OnCreate()
+		adjustSize(true)
+		redraw all
+	end if
+end handler
+
+--
+handler endIt()
+	put false into mDown
+	put false into mScroll
+	cancel timer
+	redraw all
+	checkAdjusting()
+end handler
+
+--
+public handler OnMouseUp()
+	endIt()
+	post "MouseUp" with [the click button]
+end handler
+
+--
+public handler OnMouseRelease()
+	endIt()
+	post "MouseRelease" with [the click button]
+end handler
+
+--
+public handler OnMouseCancel()
+	endIt()
+end handler
+
+--
+--
+public handler OnMouseEnter()
+	post "mouseLeave" to mE
+end handler
+
+--
+public handler OnMouseLeave()
+	put false into mDown
+	put false into mScroll
+	post "MouseLeave"
+end handler
+
+--
+public handler OnMouseScroll(dX,dY)
+	if mUseScrollWheel then
+		put true into mScroll
+		subtract (mAngle mod 5) from mAngle
+		if dY > 0 then
+			add 5 to mAngle
+		else
+			add -5 to mAngle
+		end if
+		put mAngle into mDisplayAngle
+		redraw all
+		checkAdjusting()
+	end if
+end handler
+
+--
+public handler OnSave(out rP as Array)
+	put the empty array into rP
+	put mFontName into rP["widgetFontName"]
+	format mWidth as string into rP["width"]
+	format mHeight as string into rP["height"]
+	put mLoc into rP["loc"]
+	format mLeftShift as string into rP["widgetLeftShift"]
+	format mTopShift as string into rP["widgetTopShift"]
+	format mChangeTextWidth as string into rP["widgetChangeTextWidth"]
+	format mChangeTextHeight as string into rP["widgetChangeTextHeight"]
+	format mFontSize as string into rP["widgetFontSize"]
+	format mAdjustSize as string into rP["widgetAdjustSize"]
+	format mAngle as string into rP["widgetAngle"]
+	format mShowAngle as string into rP["widgetShowAngle"]
+	put mText into rP["widgetText"]
+	format mRoundRadius as string into rP["widgetRoundRadius"]
+	format mShowBounds as string into rP["showBounds"]
+	format mUseScrollWheel as string into rP["useScrollWheel"]
+	put hhColorListToString(mBackColor) into rP["widgetBackColor"]
+	format mUseContrastColor as string into rP["useContrastColor"]
+	put hhColorListToString(mTextColor) into rP["widgetTextColor"]
+	format mUseDestinationOut as string into rP["useDestinationOut"]
+	return rP
+end handler
+
+--
+public handler OnLoad(in pP as Array)
+	if "widgetFontName" is among the keys of pP then
+		put pP["widgetFontName"] into mFontName
+	end if
+	if "width" is among the keys of pP then
+		parse pP["width"] as number into mWidth
+	end if
+	if "height" is among the keys of pP then
+		parse pP["height"] as number into mHeight
+	end if
+	if "loc" is among the keys of pP then
+		put pP["loc"] into mLoc
+	end if
+	if "widgetLeftShift" is among the keys of pP then
+		parse pP["widgetLeftShift"] as number into mLeftShift
+	end if
+	if "widgetTopShift" is among the keys of pP then
+		parse pP["widgetTopShift"] as number into mTopShift
+	end if
+	if "widgetChangeTextWidth" is among the keys of pP then
+		parse pP["widgetChangeTextWidth"] as number into mChangeTextWidth
+	end if
+	if "widgetChangeTextHeight" is among the keys of pP then
+		parse pP["widgetChangeTextHeight"] as number into mChangeTextHeight
+	end if
+	if "widgetFontSize" is among the keys of pP then
+		parse pP["widgetFontSize"] as number into mFontSize
+	end if
+	if "widgetAdjustSize" is among the keys of pP then
+		parse pP["widgetAdjustSize"] as boolean into mAdjustSize
+	end if
+	if "widgetAngle" is among the keys of pP then
+		parse pP["widgetAngle"] as number into mAngle
+	end if
+	if "widgetShowAngle" is among the keys of pP then
+		parse pP["widgetShowAngle"] as boolean into mShowAngle
+	end if
+	if "widgetText" is among the keys of pP then
+		put pP["widgetText"] into mText
+	end if
+	if "widgetRoundRadius" is among the keys of pP then
+		parse pP["widgetRoundRadius"] as number into mRoundRadius
+	end if
+	if "showBounds" is among the keys of pP then
+		parse pP["showBounds"] as boolean into mShowBounds
+	end if
+	if "useScrollWheel" is among the keys of pP then
+		parse pP["useScrollWheel"] as boolean into mUseScrollWheel
+	end if
+	if "widgetBackColor" is among the keys of pP then
+		put hhStringToColorList(pP["widgetBackColor"]) into mBackColor
+	end if
+	if "useContrastColor" is among the keys of pP then
+		parse pP["useContrastColor"] as boolean into mUseContrastColor
+	end if
+		if "widgetTextColor" is among the keys of pP then
+		put hhStringToColorList(pP["widgetTextColor"]) into mTextColor
+	end if
+	if "useDestinationOut" is among the keys of pP then
+		parse pP["useDestinationOut"] as boolean into mUseDestinationOut
+	end if
+end handler
+
+--mark SETTER and GETTER
+
+--
+handler setFontName(in pFontName as String) returns nothing
+	put pFontName into mFontName
+	redraw all
+end handler
+
+--
+handler setLeftShift(in pNum as Number) returns nothing
+	put pNum into mLeftShift
+	redraw all
+	checkAdjusting()
+end handler
+
+--
+handler setTopShift(in pNum as Number) returns nothing
+	put pNum into mTopShift
+	redraw all
+	checkAdjusting()
+end handler
+
+--
+handler setChangeTextWidth(in pNum as Number) returns nothing
+	put pNum into mChangeTextWidth
+	redraw all
+	checkAdjusting()
+end handler
+
+--
+handler setChangeTextHeight(in pNum as Number) returns nothing
+	put pNum into mChangeTextHeight
+	redraw all
+	checkAdjusting()
+end handler
+
+--
+handler setFontSize(in pSize as Number) returns nothing
+	put pSize into mFontSize
+	redraw all
+	checkAdjusting()
+end handler
+
+--
+handler setAdjustSize(in pBool as Boolean) returns nothing
+	put pBool into mAdjustSize
+	redraw all
+	checkAdjusting()
+end handler
+
+--
+handler setAngle(in pAngle as Number) returns nothing
+	-- we want always a correct angle in range -180 to 180
+	put pAngle mod 360 into pAngle
+	if pAngle < 0 then
+		add 360 to pAngle
+	end if
+	if pAngle <= 180 then
+		put pAngle into mAngle
+	else
+		put pAngle-360 into mAngle
+	end if
+	put mAngle into mDisplayAngle
+	redraw all
+	if not mDown then
+		checkAdjusting()
+	else
+		redraw all
+	end if
+end handler
+
+--
+handler setShowAngle(in pBool as Boolean) returns nothing
+	put pBool into mShowAngle
+	redraw all
+	checkAdjusting()
+end handler
+
+--
+handler setText(in pLabel as String) returns nothing
+	put pLabel into mText
+	redraw all
+	checkAdjusting()
+end handler
+
+--
+handler setRoundRadius(in pRadius as Number) returns nothing
+	put pRadius into mRoundRadius
+	redraw all
+end handler
+
+--
+handler setShowBounds(in pBool as Boolean) returns nothing
+	put pBool into mShowBounds
+	redraw all
+end handler
+
+--
+handler setUseScrollWheel(in pBool as Boolean) returns nothing
+	put pBool into mUseScrollWheel
+	redraw all
+end handler
+
+--
+handler getBackColor() returns String
+	 return hhColorListToString(mBackColor)
+end handler
+
+--
+handler setBackColor(in pTextColor as String) returns nothing
+	put hhStringToColorList(pTextColor) into mBackColor
+	if mUseContrastColor then
+		put hhStringToColorList(getContrastColor(pTextColor)) into mTextColor
+	end if
+	redraw all
+end handler
+
+--
+handler setUseTextColorForBorder(in pBool as Boolean) returns nothing
+	put pBool into mUseTextColorForBorder
+	redraw all
+end handler
+
+--
+handler setUseContrastColor(in pBool as Boolean) returns nothing
+	put pBool into mUseContrastColor
+	redraw all
+end handler
+
+--
+handler getBorderColor() returns String
+	return hhColorListToString(mBorderColor)
+end handler
+
+--
+handler setBorderColor(in pBorderColor as String) returns nothing
+	put hhStringToColorList(pBorderColor) into mBorderColor
+	redraw all
+end handler
+
+--
+handler getTextColor() returns String
+	return hhColorListToString(mTextColor)
+end handler
+
+--
+handler setTextColor(in pTextColor as String) returns nothing
+	put hhStringToColorList(pTextColor) into mTextColor
+	if mUseContrastColor then
+		put hhStringToColorList(getContrastColor(pTextColor)) into mBackColor
+	end if
+	redraw all
+end handler
+
+--
+handler setStrokeBack(in pBool as Boolean) returns nothing
+	put pBool into mStrokeBack
+	redraw all
+	checkAdjusting()
+end handler
+
+--
+handler setStrokeWidth(in pNum as Number) returns nothing
+	put pNum into mStrokeWidth
+	redraw all
+	checkAdjusting()
+end handler
+
+--
+handler setUseDestinationOut(in pBool as Boolean) returns nothing
+	put pBool into mUseDestinationOut
+	redraw all
+end handler
+
+--mark hh-HELPER
+
+-- compute angle from click position
+--
+handler getTextAngle(in pPoint as Point) returns Number
+	variable dX as Number
+	variable dY as Number
+	variable tR as Number
+	put the x of pPoint - the x of mCenter into dX
+	put the y of pPoint - the y of mCenter into dY
+	put the maximum of 1 and (dX*dX+dY*dY)^0.5 into tR
+	if dY < 0 then
+		return 90-acos(dX/tR)*kPi180
+	else
+		return 90+acos(dX/tR)*kPi180
+	end if
+end handler
+
+--
+handler setTextAngle(in pNum as Number) returns nothing
+	variable tNum as Number
+	put pNum-mBaseAngle into tNum
+	if tNum < 0 then
+		add 360 to tNum
+	end if
+	setAngle(tNum)
+end handler
+
+--
+handler checkAdjusting() returns nothing
+	if mAdjustSize then
+		adjustSize(true)
+		if in edit mode then
+			redraw all
+		end if
+	end if
+end handler
+
+--
+--
+handler pointInShape(in pPoint as Point, in pList as List) returns Boolean
+	variable tX0 as Number
+	variable tY0 as Number
+	put the x of pPoint into tX0
+	put the y of pPoint into tY0
+	variable tCheck as Boolean
+	put false into tCheck
+	-- ACKNOWLEDGEMENT:
+	-- This is essentially the subdivison algorithm by MShimrat (Aug 1962).
+	variable tC as Number
+	variable tX1 as Number
+	variable tX2 as Number
+	variable tY1 as Number
+	variable tY2 as Number
+	variable nJ as Number
+	put the number of elements in pList into nJ
+	repeat with tC from 1 up to nJ
+		put the x of pList[tC] into tX1
+		put the y of pList[tC] into tY1
+		put the x of pList[nJ] into tX2
+		put the y of pList[nJ] into tY2
+	   	if ( ((tY1 > tY0) is not (tY2 > tY0)) and \
+	   	( tX0 < tX1 + (tX2-tX1)*(tY0-tY1)/(tY2-tY1) ) ) then
+			put not tCheck into tCheck
+		end if
+		put tC into nJ
+	end repeat
+	return tCheck
+end handler
+
+-- pString is the instructions of a transformed rectangle path
+--
+handler hhPointIsInTransformedRect(in pPoint as Point, in pString as String) returns Boolean
+	return pointInShape(pPoint, hhInstructionsToPoints(pString))
+end handler
+
+-- pString is the instructions of a transformed rectangle path
+--
+handler hhInstructionsToPoints(in pString as String) returns List
+	variable tS as String
+	variable tL as List
+	variable tL1 as List
+	variable tOff as Number
+	variable tN as Number
+	replace "-" with " -" in pString
+	replace "L -" with "L-" in pString
+	replace "M -" with "M-" in pString
+	put the first offset of "L" in pString into tOff
+	put char 2 to (tOff-1) of pString into tS
+	put " " & char (tOff+1) to -2 of pString after tS
+	split tS by " " into tL
+	put the empty list into tL1
+	put the number of elements in tL into tN
+	if tN > 1 then
+		push point [element 1 of tL parsed as number, \
+		element 2 of tL parsed as number] onto tL1
+	end if
+	if tN > 3 then
+		push point [element 3 of tL parsed as number, \
+		element 4 of tL parsed as number] onto tL1
+	end if
+	if tN > 5 then
+		push point [element 5 of tL parsed as number, \
+		element 6 of tL parsed as number] onto tL1
+	end if
+	if tN > 7 then
+		push point [element 7 of tL parsed as number, \
+		element 8 of tL parsed as number] onto tL1
+	end if
+	if tN > 1 then
+		push point [element 1 of tL parsed as number, \
+		element 2 of tL parsed as number] onto tL1
+	end if
+	return tL1
+end handler
+
+--
+handler adjustSize(in pBool as Boolean) returns nothing
+	rotate mPath by mAngle --> mPath is set in OnPaint()
+	variable tR as Rectangle
+	variable tW as Number
+	variable tH as Number
+	put outsetRect(1.4*mStrokeWidth/2,the bounding box of mPath)into tR
+	put the width of tR into tW
+	put the height of tR into tH
+	put point [tW/2, tH/2] into mCenter
+	if my width is not tW or my height is not tH then
+		put (the trunc of tW) into tW
+		put (the trunc of tH) into tH
+			post "put the loc of me into tL; set width of me to " & \
+				(tW formatted as string) & "; set height of me to " & \
+				(tH formatted as string) & "; set loc of me to tL;" to mE
+		put tW into mWidth
+		put tH into mHeight
+		put (the rounded of ((the left of tR+the right  of tR)/2) formatted as string) & \
+			 (the rounded of ((the top  of tR+the bottom of tR)/2) formatted as string) into mLoc
+	end if
+end handler
+
+--
+handler outsetRect(in pD as Number, in pR as Rectangle) returns Rectangle
+	return changeRect([-pD,-pD,pD,pD],pR)
+end handler
+
+--
+handler changeRect(in pL as List,in pR as Rectangle) returns Rectangle
+	return rectangle [pL[1]+the left of pR, pL[2]+the top of pR, \
+			pL[3]+the right of pR, pL[4]+the bottom of pR]
+end handler
+
+-- 0-255 values to 0-1 values
+handler color255To1(in pNum as Number) returns Number
+	return pNum/255
+end handler
+
+-- 0-1 values to 0-255 values
+handler color1To255(in pNum as Number) returns Number
+	return the trunc of (255*pNum)
+end handler
+
+-- in-Clr: [r,g,b] where r,g,b is in integer range 0-255
+handler adjustContrastRatio(in pMinContrast as Number,in pBaseClr as List,in pClr as List) returns List
+-- pMinContrast is usually a number between 4.0 and 7.0, I use mostly 5.5
+-- pBaseColor is usually used as backColor, pClr is a "startColor"
+-- The result is again in the form [r,g,b], usable as "color [r/255, g/255, b/255]
+-- (or convert it to a string for use in LC Script)
+-- The result is here a grayLevel (r=g=b), usually not too bad in contrast.
+	variable goDown as Boolean
+	put false into goDown
+	variable pClr1 as List
+	put pClr into pClr1
+	variable tCnt as Number
+	put 0 into tCnt
+	repeat forever
+		add 1 to tCnt
+		if contrastRatio(relativeLuminance(pClr),relativeLuminance(pBaseClr)) > pMinContrast or tCnt > 999 then
+			exit repeat
+		end if
+		if pClr is [255,255,255] then -- or other criterium
+			put true into goDown
+			put pClr1 into pClr
+		end if
+		variable tC as Number
+		if goDown then
+			 repeat with tC from 1 up to 3
+				put the maximum of 0 and (-1 + pClr[tC]) into pClr[tC]
+			end repeat
+		else
+			repeat with tC from 1 up to 3
+				put the minimum of 255 and (1 + pClr[tC]) into pClr[tC]
+			end repeat
+		end if
+		if pClr is [0,0,0] then
+			exit repeat
+		end if
+	end repeat
+	return pClr
+end handler
+
+-- pRGB is of the form [r,g,b] where each r,g,b is in integer range 0-255
+handler relativeLuminance(in pRGB as List) returns Number
+	variable tLuminance as Number
+	put 0 into tLuminance
+	variable tWeights as List
+	put [0.2126,0.7152,0.0722] into tWeights
+	variable tC as Number
+	repeat with tC from 1 up to 3
+		variable tCC
+		variable tRi
+		put pRGB[tC]/255 into tCC
+		if tCC <= 0.03928 then
+			put tCC/12.92 into tRi
+		else
+			put ((tCC+0.055)/1.055)^2.4 into tRi
+		end if
+		add (tWeights[tC]*tRi) to tLuminance
+	end repeat
+	return tLuminance
+end handler
+
+-- computes ratio of lighter against darker
+handler contrastRatio (in pL1 as Number, in pL2 as Number) returns Number
+	if pL1 > pL2 then -- pL2 is darker
+		return (pL1 + 0.05) / (pL2 + 0.05)
+	else
+		return (pL2 + 0.05) / (pL1 + 0.05)
+	end if
+end handler
+
+-- in 0-255 string, out 0-1 list
+handler hhStringToColorList(in pString as String) returns List
+	if the number of chars in pString is 0 then
+		 return [0.0, 0.0, 0.0, 1.0]
+	end if
+	variable tList as List
+	split pString by "," into tList
+	variable tNum as Number
+	put the number of elements in tList into tNum
+	variable tR as Number
+	variable tG as Number
+	variable tB as Number
+	variable tA as Number
+	put ((element 1 of tList) parsed as number) into tR
+	put ((element 2 of tList) parsed as number) into tG
+	put ((element 3 of tList) parsed as number) into tB
+	if tNum = 4 then -- put first tA in range 0-1
+		put ((element 4 of tList) parsed as number) into tA
+		if not ("." is in pString) then
+			put tA/255 into tA
+		end if
+	else
+		put 1.0 into tA
+	end if
+	if "." is in pString then
+		return [tR, tG, tB, tA]
+	else
+		return [tR/255, tG/255, tB/255, tA]
+	end if
+end handler
+
+-- in 0-1 list, out 0-255 four-item string
+handler hhColorListToString(in pList as List) returns String
+	if pList is nothing then
+		return "0,0,0,255"
+	end if
+	return numListToString(applyToList(color1To255,pList))
+end handler
+
+-- in/out a 0-255 colors string
+handler getContrastColor(in pC as String) returns String
+	variable tB as List
+	variable tF as List
+	variable tA as Number
+	put stringToNumList(pC) into tB
+	if the number of elements in tB < 4 then
+		put 255 into tA
+	else
+		put element 4 of tB into tA
+		delete element 4 of tB
+	end if
+	put adjustContrastRatio(7, tB, tB)&[tA] into tF
+	return numListToString(tF)
+end handler
+
+-- applyHandler/applyToList (peter-b's technique)
+handler type ApplyHandler(in pValue as optional any) returns optional any
+
+-- in/out a 0-1 colors string
+handler getContrastColor01(in pC as String) returns String
+	variable tB as List
+	variable tF as List
+	variable tA as Number
+	put stringToNumList(pC) into tB
+		put stringToNumList(pC) into tB
+		if the number of elements in tB < 4 then
+		put 1.0 into tA
+	else
+		put element 4 of tB into tA
+	end if
+	delete element 4 of tB
+	put applyToList(color1to255,tB) into tB
+	put adjustContrastRatio(8, tB, tB) into tF
+	put applyToList(color255to1,tF)&[tA] into tF
+	return numListToString(tF)
+end handler
+
+--
+handler applyToList(in pHandler as ApplyHandler, in pValues as List) returns List
+	variable tResult as List
+	variable tValue as optional any
+	repeat for each element tValue in pValues
+		push pHandler(tValue) onto tResult
+	end repeat
+	return tResult
+end handler
+
+--
+handler numListToStringList(in pNumList as List) returns List
+		return applyToList(formatToString,pNumList)
+end handler
+
+--
+handler stringListToNumList(in pStringList as List) returns List
+		return pStringList parsed as list of number
+		-- return applyToList(formatToNumber,pStringList)
+end handler
+
+--
+handler stringToNumList(in pString as String) returns List
+	variable tL as List
+	split pString by "," into tL
+	return stringListToNumList(tL)
+end handler
+
+--
+handler numListToString(in pNumList as List) returns String
+	variable tS as String
+	variable tL as List
+	put numListToStringList(pNumList) into tL
+	combine tL with "," into tS
+	return tS
+end handler
+
+--
+handler formatToString(in pEach as optional any) returns optional any
+		return pEach formatted as string
+end handler
+
+--
+handler formatToNumber(in pEach as optional any) returns optional any
+		return pEach parsed as number
+end handler
+
+--mark PROPERTIES/BASIC
+
+property widgetVersion	get mWidgetVersion
+
+--mark widgetFontName
+/**
+Syntax:
+set the widgetFontName of <widget> to <pFontName>
+get the widgetFontName of <widget>
+
+Parameters:
+pFontName: The name of an available textfont.
+
+Example:
+set the widgetFontName of widget "OrientedText" to "Verdana"
+
+Summary: Set or get the Textfont used for displaying the text.
+**/
+property widgetFontName get mFontName	set setFontName
+metadata widgetFontName.editor is "com.livecode.pi.enum"
+metadata widgetFontName.options is "execute:get the fontNames; sort it"
+
+--mark widgetFontSize
+/**
+Syntax:
+set the widgetFontSize of <widget> to <pNumber>
+get the widgetFontSize of <widget>
+
+Parameters:
+pNumber: A number >= 10
+
+Example:
+set the widgetFontSize of widget "OrientedText" to 12
+
+Summary: Set or get the widgetFontSize used for the text. Default is 24.
+**/
+property widgetFontSize	get mFontSize set setFontSize
+metadata widgetFontSize.editor is "com.livecode.pi.number"
+metadata widgetFontSize.min is "10"
+metadata widgetFontSize.step is "1"
+
+--mark widgetAdjustSize
+/**
+Syntax:
+set the widgetAdjustSize of <widget> to <pTrueOrFalse>
+get the widgetAdjustSize of <widget>
+
+Parameters:
+pTrueOrFalse: is true or false
+
+Example:
+set the widgetAdjustSize of widget "OrientedText" to "true"
+
+Summary: Set the widgetAdjustSize of widget "OrientedText" to true for adjusting the size of the widget to the text's bounding box (which changes with the text's rotation). Default is true.
+**/
+property widgetAdjustSize get mAdjustSize	set setAdjustSize
+metadata widgetAdjustSize.editor is "com.livecode.pi.boolean"
+
+--mark widgetTextLeftShift
+/**
+Syntax:
+set the widgetTextLeftShift of <widget> to <pNumber>
+get the widgetTextLeftShift of <widget>
+
+Parameters:
+pNumber: A non-negative number
+
+Example:
+set the widgetTextLeftShift of widget "OrientedText" to 2
+
+Summary: Shifts the text right by the given amount. Default is 0.
+This is for a better 'manual' centering of some fonts.
+**/
+property widgetTextLeftShift get mLeftShift set setLeftShift
+metadata widgetTextLeftShift.editor is "com.livecode.pi.number"
+metadata widgetTextLeftShift.step is "1"
+
+--mark widgetTextTopShift
+/**
+Syntax:
+set the widgetTextTopShift of <widget> to <pNumber>
+get the widgetTextTopShift of <widget>
+
+Parameters:
+pNumber: A non-negative number
+
+Example:
+set the widgetTextTopShift of widget "OrientedText" to 2
+
+Summary: Shifts the text down by the given amount. Default is 0.
+This is for a better 'manual' centering of some fonts.
+**/
+property widgetTextTopShift get mTopShift set setTopShift
+metadata widgetTextTopShift.editor is "com.livecode.pi.number"
+metadata widgetTextTopShift.step is "1"
+
+--mark widgetChangeTextWidth
+/**
+Syntax:
+set the widgetChangeTextWidth of <widget> to <pNumber>
+get the widgetChangeTextWidth of <widget>
+
+Parameters:
+pNumber: A non-negative number
+
+Example:
+set the widgetChangeTextWidth of widget "OrientedText" to 2
+
+Summary: Expands the text by whitespace of the given amount. Default is 0.
+This is for a better 'manual' centering of some fonts.
+**/
+property widgetChangeTextWidth get mChangeTextWidth set setChangeTextWidth
+metadata widgetChangeTextWidth.editor is "com.livecode.pi.number"
+metadata widgetChangeTextWidth.step is "1"
+
+--mark widgetChangeTextHeight
+/**
+Syntax:
+set the widgetChangeTextHeight of <widget> to <pNumber>
+get the widgetChangeTextHeight of <widget>
+
+Parameters:
+pNumber: A non-negative number
+
+Example:
+set the widgetChangeTextHeight of widget "OrientedText" to 2
+
+Summary: Expands the height of the text by whitespace of the given amount. Default is 0.
+This is for a better 'manual' centering of some fonts.
+**/
+property widgetChangeTextHeight get mChangeTextHeight set mChangeTextHeight
+metadata widgetChangeTextHeight.editor is "com.livecode.pi.number"
+metadata widgetChangeTextHeight.step is "1"
+
+--mark widgetAngle
+/**
+Syntax:
+set the widgetAngle of <widget> to <pAngle>
+get the widgetAngle of <widget>
+
+Parameters:
+pAngle: An angle (degrees) in range -180 to 180. Negative values turn left (counterclockwise rotation), positive angles turn right (clockwise rotation).
+
+Example:
+set the widgetAngle of widget "OrientedText" to "-90" -- (turn left)
+set the widgetAngle of widget "OrientedText" to "90" -- (turn right)
+
+Summary: Set or get the angle of the displayed text. This is a "ToAngle" (and not an additive "ByAngle").
+**/
+property widgetAngle	 get mAngle	 set setAngle
+metadata widgetAngle.editor	is "com.livecode.pi.number"
+metadata widgetAngle.min is "-180"
+metadata widgetAngle.max is "180"
+metadata widgetAngle.step is "1"
+
+--mark widgetShowAngle
+/**
+Syntax:
+set the widgetShowAngle of <widget> to <pTrueOrFalse>
+get the widgetShowAngle of <widget>
+
+Parameters:
+pTrueOrFalse: is true or false
+
+Example:
+set the widgetShowAngle of widget "OrientedText" to "true"
+
+Summary: Set the widgetShowAngle of widget "OrientedText" to true for displaying the widgetAngle while dragging. Default is true.
+**/
+property widgetShowAngle get mShowAngle set setShowAngle
+metadata widgetShowAngle.editor is "com.livecode.pi.boolean"
+
+--mark widgetText
+/**Syntax:
+set the widgetText of <widget> to <pString>
+get the widgetText of <widget>
+
+Parameters:
+pString: A string that is displayed using the widgetFontName and the widgetFontSize. Multiline strings are NOT supported. Default is "Drag to rotate".
+
+Example:
+set the widgetText of widget "OrientedText" to "Welcome @HOME!"
+
+Summary: Set or get the text used for the display.
+**/
+property widgetText	get mText set setText
+metadata widgetText.editor is "com.livecode.pi.string"
+
+--mark widgetRoundRadius
+/**
+Syntax:
+set the widgetRoundRadius of <widget> to <pWidth>
+get the widgetRoundRadius of <widget>
+
+Parameters:
+pWidth: A non-negative number
+
+Example:
+set the widgetRoundRadius of widget "OrientedText" to 4
+
+Summary: Set or get the widgetRoundRadius for the rounded corners of the text's background. Default is 16.
+**/
+property widgetRoundRadius	get mRoundRadius	set setRoundRadius
+metadata widgetRoundRadius.editor is "com.livecode.pi.number"
+metadata widgetRoundRadius.min is "0"
+metadata widgetRoundRadius.step is "1"
+
+--mark showBounds
+/**
+Syntax:
+set the showBounds of <widget> to <pTrueOrFalse>
+get the showBounds of <widget>
+
+Parameters:
+pTrueOrFalse: is true or false
+
+Example:
+set the showBounds of widget "OrientedText" to "true"
+
+Summary: Set the showBounds of widget "OrientedText" to true for the display of the bounding box (which changes with the text's rotation). Default is true.
+**/
+property showBounds get mShowBounds	set setShowBounds
+metadata showBounds.editor is "com.livecode.pi.boolean"
+
+--mark useScrollWheel
+/**
+Syntax:
+set the useScrollWheel of <widget> to <pTrueOrFalse>
+get the useScrollWheel of <widget>
+
+Parameters:
+pTrueOrFalse: is true or false
+
+Example:
+set the useScrollWheel of widget "OrientedText" to "false"
+
+Summary: Set the useScrollWheel of widget "OrientedText" to true for changing the widget's angle in multiples of 5 degrees. Default is true.
+To get rid of the angle display after scrolling click once on the widget.
+**/
+property useScrollWheel get mUseScrollWheel	set setUseScrollWheel
+metadata useScrollWheel.editor is "com.livecode.pi.boolean"
+
+--mark PROPERTIES/COLORS
+--mark widgetBackColor
+/**
+Syntax:
+set the widgetBackColor of <widget> to <pColor>
+get the widgetBackColor of <widget>
+
+Parameters:
+pColor: The color in RGB or RGBA format (string of 3-4 items string of 0-255 integers)
+
+Example:
+set the widgetBackColor of widget "OrientedText" to "255,127,0"
+-- returns a _four-item_ string
+get the widgetBackColor of widget "OrientedText" -- "255,127,0,255"
+
+Summary: Sets or gets the widgetBackColor for the text's background.
+Default is "255,255,255,204".
+**/
+property widgetBackColor get getBackColor set setBackColor
+metadata widgetBackColor.editor is "com.livecode.pi.colorwithalpha"
+metadata widgetBackColor.section is "Colors"
+
+--mark useContrastColor
+/**
+Syntax:
+set the useContrastColor of <widget> to <pTrueOrFalse>
+get the useContrastColor of <widget>
+
+Parameters:
+pTrueOrFalse: is true or false
+
+Example:
+set the useContrastColor of widget "OrientedText" to false
+
+Summary: Set the useContrastColor of widget "OrientedText" to use high-contarst-colors.
+If set to true the selection of widgetBackColor computes a contratsColor for the widgetTextColor and vice versa. Default is true.
+**/
+property useContrastColor get mUseContrastColor	set setUseContrastColor
+metadata useContrastColor.editor is "com.livecode.pi.boolean"
+metadata useContrastColor.section is "Colors"
+
+--mark widgetTextColor
+/**
+Syntax:
+set the widgetTextColor of <widget> to <pColor>
+get the widgetTextColor of <widget>
+
+Parameters:
+pColor: The color in RGB or RGBA format (string of 3-4 items string of 0-255 integers)
+
+Example:
+set the widgetTextColor of widget "OrientedText" to "255,127,0"
+-- returns a _four-item_ string
+get the widgetTextColor of widget "OrientedText" -- "255,127,0,255"
+
+Summary: Sets or gets the widgetTextColor for drawing the text.
+Default is "153,0,0,255". The widgetTextColor is also used for drawing the background's border (stroke) if the strokeBack is true.
+The
+**/
+property widgetTextColor get getTextColor	 set setTextColor
+metadata widgetTextColor.editor is "com.livecode.pi.colorwithalpha"
+metadata widgetTextColor.section is "Colors"
+
+--mark useTextColorForBorder
+/**
+Syntax:
+set the useTextColorForBorder of <widget> to <pTrueOrFalse>
+get the useTextColorForBorder of <widget>
+
+Parameters:
+pTrueOrFalse: is true or false
+
+Example:
+set the useTextColorForBorder of widget "OrientedText" to false
+
+Summary: Set the useTextColorForBorder of widget "OrientedText" to use the TextColor also for the drawing the border. Default is true.
+**/
+property useTextColorForBorder get mUseTextColorForBorder	set setUseTextColorForBorder
+metadata useTextColorForBorder.editor is "com.livecode.pi.boolean"
+metadata useTextColorForBorder.section is "Colors"
+
+--mark widgetBorderColor
+/**
+Syntax:
+set the widgetBorderColor of <widget> to <pColor>
+get the widgetBorderColor of <widget>
+
+Parameters:
+pColor: The color in RGB or RGBA format (string of 3-4 items string of 0-255 integers)
+
+Example:
+set the widgetBorderColor of widget "OrientedBorder" to "255,127,0"
+-- returns a _four-item_ string
+get the widgetBorderColor of widget "OrientedBorder" -- "255,127,0,255"
+
+Summary: Sets or gets the widgetBorderColor for drawing the text.
+Default is "153,0,0,255". The widgetBorderColor is only used for drawing the background's border **if property  strokeBack is true and property useTextColorFor Border is false**.
+The
+**/
+property widgetBorderColor get getBorderColor	 set setBorderColor
+metadata widgetBorderColor.editor is "com.livecode.pi.colorwithalpha"
+metadata widgetBorderColor.section is "Colors"
+
+--mark widgetStrokeWidth
+/**
+Syntax:
+set the widgetStrokeWidth of <widget> to <pWidth>
+get the widgetStrokeWidth of <widget>
+
+Parameters:
+pWidth: A non-negative number
+
+Example:
+set the widgetStrokeWidth of widget "OrientedText" to 4
+
+Summary: Set or get the widgetStrokeWidth for stroking (outlining the border) of each grid element. Default is 4.
+**/
+property widgetStrokeWidth	get mStrokeWidth	set setStrokeWidth
+metadata widgetStrokeWidth.editor is "com.livecode.pi.number"
+metadata widgetStrokeWidth.section is "Colors"
+metadata widgetStrokeWidth.min is "0"
+metadata widgetStrokeWidth.step is "1"
+
+--mark strokeBack
+/**
+Syntax:
+set the strokeBack of <widget> to <pTrueOrFalse>
+get the strokeBack of <widget>
+
+Parameters:
+pTrueOrFalse: is true or false
+
+Example:
+set the strokeBack of widget "OrientedText" to not \
+           the strokeBack of widget "OrientedText"
+
+Summary: Set the strokeBack of widget "OrientedText" to true for displaying a border (stroke) of the widget's backhround. Default is true.
+If strokeBack is tue the border is drawn with the current stroke width gridStrokeWidth and the color widgetTextColor.
+**/
+property strokeBack get mStrokeBack	set setStrokeBack
+metadata strokeBack.editor is "com.livecode.pi.boolean"
+metadata strokeBack.section is "Colors"
+
+--mark useDestinationOut
+/**
+Syntax:
+set the useDestinationOut of <widget> to <pTrueOrFalse>
+get the useDestinationOut of <widget>
+
+Parameters:
+pTrueOrFalse: is true or false
+
+Example:
+set the useDestinationOut of widget "OrientedText" to "true"
+
+Summary: Set the useDestinationOut of widget "OrientedText" to true for making the text "transparent": You can look through to it to the objects underneath the widget. Default is true.
+**/
+property useDestinationOut get mUseDestinationOut	set setUseDestinationOut
+metadata useDestinationOut.editor is "com.livecode.pi.boolean"
+metadata useDestinationOut.section is "Colors"
+
+
+end widget

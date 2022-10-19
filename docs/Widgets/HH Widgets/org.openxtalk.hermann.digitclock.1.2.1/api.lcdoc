@@ -1,0 +1,312 @@
+Library: org.openxtalk.hermann.digitclock
+
+Type: widget
+
+Summary:
+DigitClock v121 [-hh fecit, Oct 2016/Oct 2018]
+
+Widget 'DigitClock' displays a digital clock with an alarm (visible only). Coloring: The clock has an optional FengShui-colored frame and text. If used, the color is set depending on the time, see the (read only) property fengShuiColoring.
+The current setting is:
+_[from 05:00 to 10:00 color "morning green" = "0,204,153"]_,
+_[from 10:00 to 12:00 color "forenoon red" = "255,102,0"]_,
+_[from 12:00 to 15:00 color "noon yellow" = "255,204,102"]_,
+_[from 15:00 to 17:00 color "afternoon white" = "255,255,255"]_,
+_[from 17:00 to 22:00 color "evening light blue" = "102,102,255"]_,
+_[from 22:00 to 05:00 color "night blue" = "0,0,255"]_.
+The time may be chosen as local or with any offset to universal time (UTC).
+This "timezone" uses in the property inspector only the built-in LC editor.
+Full hour values are also available by RightClicking the widget.
+The offset may be set to any amount of seconds in the range -12*3600 to 12*3600.
+
+The widget passes the following messages to LC Script (you can use them in your widget's script):
+mouseDown (late), mouseEnter, mouseLeave, mouseUp.
+
+author: Hermann Hoch
+
+version: 1.2.1
+
+
+Name: dateColor
+
+Type: property
+
+Syntax: set the dateColor of <widget> to <pColor>
+get the dateColor of <widget>
+
+Summary: Sets or gets the color of the display's text (timeAndDate).
+
+Parameters: 
+
+pColor: The dateColor, in RGB or RGBA format
+
+Example:
+set the dateColor of widget "DigitClock" to "255,127,0,127"
+set the dateColor of widget "DigitClock" to "255,127,0"
+-- returns a _four-item_ string
+get the dateColor of widget "DigitClock" -- "255,127,0,255"
+
+Description:
+Use the dateColor property to set the color of the clock's text display.This color is used if the useFengShuiColors property is set to false or the useDateColor property is set to true.
+The color is in the form of a 3 or 4 item string, the 4th optional item being the alpha value, all integers between 0 and 255.
+[You may also use numbers containing a decimal point between 0.0 and 1.0, for example "0.2,0.1,0.2".
+.: The "get" always returns _four_ items in the integer form (each in range 0-255). :.
+
+
+
+Name: useScaledVerdana
+
+Type: property
+
+Syntax: set the useScaledVerdana of <widget> to <pTrueOrFalse>
+get the useScaledVerdana of <widget>
+
+Summary: Sets or gets the font behaviour of the widget.
+
+Parameters: 
+
+pTrueOrFalse: is true or false
+
+Example:
+set the useScaledVerdana of widget "DigitClock" to \
+not the useScaledVerdana of widget "DigitClock"
+
+Description: The font behaviour of the widget: If set to true then font "Verdana" is used at a size that is scaled dependent on the widget's size, any other font and size setting is then ignored. If useScaledVerdana is false then your choice of textFont and textSize is used, you have to adjust the textSize by yourself.
+
+
+
+
+Name: useDateColor
+
+Type: property
+
+Syntax: set the useDateColor of <widget> to <pTrueOrFalse>
+get the useDateColor of <widget>
+
+Parameters: 
+
+pTrueOrFalse: is true or false
+
+Example:
+set the useDateColor of widget "DigitClock" to not \
+    the useDateColor of widget "DigitClock"
+
+Summary: Controls the use of the clock's dateColor (color of the text/date).
+
+Description: Use the useDateColor property also to override if poperty useFengShuiColors is set to true.
+
+
+
+
+Name: angle
+
+Type: property
+
+Syntax: set the angle of <widget> to <pAngle>
+get the angle of <widget>
+
+Parameters: 
+
+pAngle:
+The angle of rotation of the display in degrees
+is one of 0,90,-90.
+
+Example:
+-- rotate 90 degress clockwise
+set the angle of widget "DigitClock" to  90
+-- rotate 90 degrees counter-clockwise
+set the angle of widget "DigitClock" to -90
+
+Summary:
+The angle of rotation of the display as a whole.
+** The canvas bounds are adjusted after rotating. **
+
+Description: Use the angle property to rotate the display <pAngle> degrees clockwise (cw).
+
+
+
+
+Name: digitfontsize
+
+Type: property
+
+Syntax: set the digitfontsize of <widget> to <pNumber>
+get the digitfontsize of <widget>
+
+Parameters: 
+
+pNumber: A positive number in range 10 to 128
+
+Example: set the digitfontsize of widget "DigitClock" to 24
+
+Summary: Set or get the digitfontsize property for drawing the clock's text.
+
+
+
+
+Name: useShadow
+
+Type: property
+
+Syntax: set the useShadow of <widget> to <pTrueOrFalse>
+get the useShadow of <widget>
+
+Parameters: 
+
+pTrueOrFalse: is true or false
+
+Example:
+set the useShadow of widget "DigitClock" to not \
+    the useShadow of widget "DigitClock"
+
+Summary: If set to true useShadow applies a (fixed, but scaled) dropShadow effect to the widget.
+
+Description: Use the useShadow property to add adropShadow effect to the digitClock's path. (No property of the effect is currently adjustable).
+
+
+
+
+Name: fengShuiColoring
+
+Type: property
+
+Syntax: get the fengShuiColoring of <widget>
+-- returns a 'header'-line and 7 value-lines of the form:
+-- stopHour,name,colorRed,colorGreen,colorBlue
+-- value-line 1 and 7 differ only in the first item.
+
+Summary: Gets the "hour ramps" and the coloring in the hours range defined by that ramps.
+
+Example: get the fengShuiColoring of widget "DigitClock"
+
+Description:
+Use the fengShuiColoring property to get an info, for example if you wish to adjust the hoursColor, minutesColor or secondsColor accordingly.
+The format are seven lines of text of the form _stopHour, name, colorRed, colorGreen, colorBlue_
+StopHour is an hour (an integer between 1 and 24), the color values are integers between 0 and 255.
+
+
+
+Name: useFengShuiColors
+
+Type: property
+
+Syntax: set the useFengShuiColors of <widget> to <pTrueOrFalse>
+get the useFengShuiColors of <widget>
+
+Parameters: 
+
+pTrueOrFalse: is true or false
+
+Example:
+set the useFengShuiColors of widget "DigitClock" to not \
+    the useFengShuiColors of widget "DigitClock"
+
+Summary:
+Controls the coloring of frame (and optionally text) of the display.
+If useFengShuiColors is false then the strokeColor is used for the frame and the dateColor for the date/text.
+
+Description: Controls the coloring of the display's frame and, if useDateColor is false, of the display's text by FengShuiColors. These are explained in the widget's description.
+
+
+
+
+Name: digitfont
+
+Type: property
+
+Syntax: set the digitfont of <widget> to <pFontName>
+get the digitfont of <widget>
+
+Summary: Sets the textfont for the banner text. Choose from the fontnames. Default is "Verdana".
+
+Parameters: 
+
+pFontName: The name of an available textfont.
+
+Example: set the digitfont of widget "DigitClock" to "Verdana"
+
+Description: Use the digitfont property to set the textfont for the clock's text.
+
+
+
+
+Name: fillColor
+
+Type: property
+
+Syntax: set the fillColor of <widget> to <pColor>
+get the fillColor of <widget>
+
+Summary: Sets or gets the color of the display's fill (background).
+
+Parameters: 
+
+pColor: the fillColor, in RGB or RGBA format
+
+Example:
+set the fillColor of widget "DigitClock" to "255,127,0,127"
+set the fillColor of widget "DigitClock" to "255,127,0"
+-- returns a _four-item_ string
+get the fillColor of widget "DigitClock" -- "255,127,0,255"
+
+Description:
+Use the fillColor property to set the color of the display's background which is always used, may be fully transparent.
+The color is in the form of a 3 or 4 item string, the 4th optional item being the alpha value, all integers between 0 and 255.
+[You may also use numbers containing a decimal point between 0.0 and 1.0, for example "0.2,0.1,0.2".
+.: The "get" always returns _four_ items in the integer form (each in range 0-255). :.
+
+
+
+Name: strokeColor
+
+Type: property
+
+Syntax: set the strokeColor of <widget> to <pColor>
+get the strokeColor of <widget>
+
+Summary: Sets or gets the color of the display's frame.
+
+Parameters: 
+
+pColor: The tip-color, in RGB or RGBA format
+
+Example:
+set the strokeColor of widget "DigitClock" to "255,127,0,127"
+set the strokeColor of widget "DigitClock" to "255,127,0"
+-- returns a _four-item_ string
+get the strokeColor of widget "DigitClock" -- "255,127,0,255"
+
+Description:
+Use the strokeColor property to set the color of the display's frame. This color is used if the useFengShuiColors property is set to false.
+The color is in the form of a 3 or 4 item string, the 4th optional item being the alpha value, all integers between 0 and 255.
+[You may also use numbers containing a decimal point between 0.0 and 1.0, for example "0.2,0.1,0.2".
+.: The "get" always returns _four_ items in the integer form (each in range 0-255). :.
+
+
+
+Name: timeZone
+
+Type: property
+
+Syntax: set the timeZone of <widget> to <pOffset>
+get the timeZone of <widget>
+
+Parameters: 
+
+pOffset: is a number of seconds
+
+Example:
+-- set the offset to minus 2 hours and 30 minutes
+-- 'the internet date' show this as "-0230"
+set the timeZone of widget "DigitClock" to (-2*60 + 30)*60
+-- returns the current offset from UTC in seconds
+get the timeZone of widget "DigitClock"
+
+Summary: The time zone offset from UTC in seconds. Default is your local offset.
+
+Description:
+Use the timeZone property to display the time of a timezone that may be different from
+local time. If the timeZone property is set to empty, then the clock displays the local
+time and get the timeZone returns the local UTC-offset.
+
+
+
