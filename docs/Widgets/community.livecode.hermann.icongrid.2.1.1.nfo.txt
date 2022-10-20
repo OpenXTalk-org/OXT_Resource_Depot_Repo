@@ -1,1 +1,0 @@
-A Icon button grid created by the late great Hermann Hoch (Thanks HH).The control has plenty of properties for assigning SVG paths, images, colors and text label for each button.

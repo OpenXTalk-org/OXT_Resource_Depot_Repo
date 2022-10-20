@@ -1,1 +1,1 @@
-An excellent button grid control with plenty of options, thanks to Hermann Hoch
+Created by the late great Hermann Hoch (Thank you HH), the Icon Grid widget creates a grid of buttons, with plenty of properties for assigning SVG paths, images, colors and text label to each button.
