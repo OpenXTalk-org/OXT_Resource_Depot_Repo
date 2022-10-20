@@ -16,3 +16,4 @@ Eight-Way Widget	8-direction virtual-joystick control	https://github.com/PaulMcC
 Custom Checkbox	Checkbox control with additional options		1.0.0	Hoerwi	org.openxtalk.hoerwi.customcheckbox	widget	Widgets/org.openxtalk.hoerwi.customcheckbox.1.0.0.lce.b64
 CoreMIDI Library	xTalk scripting for Apple's MIDI API	https://github.com/PaulMcClernan/	0.6.0	Paul McClernan	org.openxtalk.coremidi.paulmcclernan	library	Widgets/org.openxtalk.coremidi.paulmcclernan.0.6.lce.b64
 ApplePDFKit Widget	Widget that uses native Apple PDF Kit view	https://github.com/PaulMcClernan/	0.0.5	Paul McClernan	org.openxtalk.applepdfkit.paulmcclernan	widget	Widgets/org.openxtalk.applepdfkit.paulmcclernan.0.0.5.lce.b64
+hhGrid	Add Summary Here	Add URL Here	2.1.1	Hermann Hoch	org.openxtalk.hermann.icongrid	widget	B64URL
