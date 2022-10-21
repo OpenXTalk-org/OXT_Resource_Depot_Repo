@@ -1,1 +1,11 @@
-Simple five-star rating control,10 with half-stars, with basic style options.This was my first Widget, created as a learning exercise, but it may be useful to someone.There is a minimal set of properties such as iconColor and iconHiliteColor. This is an example of how you can build widgets simply by putting SVG path drawing strings, exported from a drawing application such as InkScape or Adobe Illustrator, into Extension Builder language arrays and then rendering them to the widgets view with very little other coding.The widget includes a default mouseDown script that can allows for the end user to click and drag on the widget to set its amount of stars property.Usageset the amountOfStars of widget FiveStar to 3.5
+Simple five-star rating control,10 with half-stars, with basic style options.
+This was my first Widget, created as a learning exercise, but it may be useful to someone.
+There is a minimal set of properties such as iconColor and iconHiliteColor. 
+This is an example of how you can build widgets simply by putting SVG path drawing strings, 
+exported from a drawing application such as InkScape or Adobe Illustrator, into 
+Extension Builder language arrays and then rendering them to the widgets view with 
+very little other coding.
+The widget includes a default mouseDown script that can allows for the end user to 
+click and drag on the widget to set its amount of stars property.
+Usage
+set the amountOfStars of widget FiveStar to 3.5
