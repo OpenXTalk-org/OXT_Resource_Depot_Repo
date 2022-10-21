@@ -1,1 +1,1 @@
-A color picker control with slliders
+This widget is a  nice, open-source color-picker with slliders from the late great Hermann Hoch.  Great for use as a pop-up picker for quick color selection.

@@ -1,1 +1,1 @@
-Summary: 8-direction virtual-joystick control
+Eight-Way Widget is an on screen directional control, and is meant to be used as virtual D-Pad like those found on physical gamepads. The center circle acts as a dead-zone and it can be adjusted for different size thumbs.
