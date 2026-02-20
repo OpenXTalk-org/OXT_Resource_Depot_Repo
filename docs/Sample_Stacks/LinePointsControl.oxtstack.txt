@@ -1,0 +1,1 @@
+Example of controlling line graphic end-points from other objects
