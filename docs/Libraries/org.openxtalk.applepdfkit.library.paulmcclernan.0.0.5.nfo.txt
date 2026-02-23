@@ -1,0 +1,3 @@
+OXT Apple PDF Kit Extension is the library version of the wrapper
+
+NOTE: Both he the Widget and the Library Versions currently crash on macOS 15 and newer when to display PDFs (other functions still work). The Extension needs to be updated.
