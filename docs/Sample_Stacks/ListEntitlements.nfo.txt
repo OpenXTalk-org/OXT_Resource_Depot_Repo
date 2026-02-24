@@ -1,0 +1,1 @@
+Demo of how to get the Entitlements of a macOS Binary. Requires macOS with Apple's Command Line Developer Tools installed.

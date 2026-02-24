@@ -1,0 +1,12 @@
+Name:
+Side-Scroller Game Test
+
+Summary:
+My first attempt at a "Mario" styled Side-Scrolling Game
+
+Author(s):
+Derek@Speedbump.io
+
+This project attempts to solve the basic concepts on how to build a side-scrolling video game, much like the classic Super Mario Brothers series from Nintendo.  Currently this test supports Gravity, Jumping, Hitting (or "Kicking" as it was referred to in Mario), Scrolling, Object Detection and different behaviors for each "sprite".
+
+

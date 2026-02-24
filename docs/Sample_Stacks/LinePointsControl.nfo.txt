@@ -1,8 +1,1 @@
-Name:
-Line Points Control
-
-Summary:
-Example stack of controlling line graphic end-points from other objects
-
-Author(s):
-Paul McClernan
+Line Points Control is a basic example stack of controlling line graphic end-points from other objectsPaul McClernan

@@ -1,0 +1,1 @@
+Froggie is a basic clone of the game Frogger by Andreas Strauch

@@ -1,1 +1,1 @@
-A crontrol for displaying text that allows for rotated text
+A Extension Module that is a widget for displaying text that allows for rotated text

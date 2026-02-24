@@ -1,0 +1,5 @@
+AVMIDIPlayerDemo by Paul McClernan
+
+This is a demo of the Apple AVMIDIPlayer Extension for playing MIDI music with SoundFonts (.SF2 or .DLS). This will only work properly on Apple platforms and has been tested on macOS only (10.8 or newer required). For a similar but cross-platform solution try the FluidSynth Extension instead.
+
+This demo stack is also an example of one way to store an Extension module embedded into a stack, encoded as Base64 plain-text data, in a way that can be loaded 'on-the-fly' as needed that even works in 'scriptOnly' stack files.

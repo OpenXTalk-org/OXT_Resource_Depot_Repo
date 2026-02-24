@@ -1,0 +1,11 @@
+Name:
+Cursors Set
+
+Summary:
+Cursors stack provides 26 new cursors, along with directions for creating your own
+
+Author(s):
+Stephen Goldberg
+
+
+The Cursors stack provides 26 new cursors (free), along with directions for creating your own.

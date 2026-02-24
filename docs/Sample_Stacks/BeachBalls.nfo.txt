@@ -1,0 +1,1 @@
+Animated beach balls shows how to use gradients to make distinct color separations. Can be animated by clicking on the balls. Code in the script of the beach ball graphics. Change speed by adjusting the script.Beach balls can be changed in size and proportions. Should still work.Have funBernd Niggemann
